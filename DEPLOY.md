@@ -99,16 +99,21 @@ produção. O `Dockerfile` na raiz do projeto faz o build multi-stage
 
 1. Criar um novo app do tipo **Dockerfile** (não "App" genérico), apontando
    para este repositório e o `Dockerfile` da raiz.
-2. **Build Variables** (não confundir com env vars de runtime!) — o
-   EasyPanel geralmente tem uma seção separada para isso, repassada como
-   `--build-arg` ao `docker build`:
+2. **Build Variables** (repassadas como `--build-arg` ao `docker build`) —
+   necessárias para embutir a URL/chave no bundle do client (`lib/supabase/client.ts`):
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-3. **Env vars de runtime** (opcional/redundante para este app, já que as
-   `NEXT_PUBLIC_*` já foram embutidas no build — mas não custa manter
-   consistente caso alguma rota adicione uma env var só de servidor no
-   futuro):
-   - as mesmas duas variáveis, para o caso de alguma leitura em runtime.
+3. **Env vars de runtime — OBRIGATÓRIAS, não opcionais.** `src/proxy.ts`
+   (middleware, roda em toda requisição) e `lib/supabase/server.ts` (Server
+   Components) leem `process.env.NEXT_PUBLIC_SUPABASE_URL` **em tempo de
+   execução no Node do container**, e isso é independente do valor embutido
+   no bundle do client — o build-time embedding só afeta código que roda no
+   navegador. Sem essas variáveis também configuradas como env vars normais
+   de runtime no EasyPanel, o `proxy.ts` lança exceção em toda requisição e
+   o app inteiro responde "Internal Server Error". Configure as mesmas duas
+   variáveis nos dois lugares (Build Variables **e** env vars de runtime):
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 4. Porta do container: `3000`.
 5. Domínio: aponte o domínio do CRM (ex. `crm.atmaimob.com.br`) para esse
    app no EasyPanel; ele cuida do proxy/TLS.
