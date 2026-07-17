@@ -57,25 +57,16 @@ export default function LoginPage() {
         width={763}
         height={257}
         priority
-        className="h-16 w-[190px] shrink-0 aspect-[763/257]"
+        className="h-16 w-[190px] shrink-0 self-center aspect-[763/257]"
       />
 
-      <div className="mt-10 border-b-2 border-ink pb-4">
-        <h1 className="text-xl font-semibold tracking-tight text-ink">
-          Acesso da equipe
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Entre com o e-mail cadastrado no CRM.
-        </p>
-      </div>
-
       {error ? (
-        <p role="alert" className="mt-5 text-sm text-alert">
+        <p role="alert" className="mt-10 text-sm text-alert">
           {error}
         </p>
       ) : null}
 
-      <form className="mt-8 space-y-7" onSubmit={handleSubmit} noValidate>
+      <form className="mt-10 space-y-7" onSubmit={handleSubmit} noValidate>
         <div>
           <label htmlFor={`${formId}-email`} className={labelBase}>
             E-mail
@@ -115,8 +106,8 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <p className="mt-16 text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
-        Atma Consultoria Imobiliária
+      <p className="mt-16 text-center text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+        © Copyright 2026 by Atma Consultoria Imobiliária
       </p>
     </main>
   );
