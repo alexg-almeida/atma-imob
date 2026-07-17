@@ -1,4 +1,8 @@
-import { kpis } from "@/lib/mock-data";
+export type Kpi = {
+  label: string;
+  value: string;
+  subtitle: string;
+};
 
 const CELL_BORDERS = [
   "",
@@ -7,10 +11,10 @@ const CELL_BORDERS = [
   "border-l max-xl:border-t",
 ];
 
-export function KpiStrip() {
+export function KpiStrip({ items }: { items: Kpi[] }) {
   return (
     <div className="grid grid-cols-2 border-y border-line xl:grid-cols-4">
-      {kpis.map((kpi, index) => (
+      {items.map((kpi, index) => (
         <div
           key={kpi.label}
           className={`border-line px-5 py-7 sm:px-6 ${CELL_BORDERS[index]}`}
@@ -21,12 +25,8 @@ export function KpiStrip() {
           <p className="mt-3 font-mono text-[2.6rem] leading-none font-medium tracking-tight text-ink">
             {kpi.value}
           </p>
-          <p
-            className={`mt-3 text-xs font-medium ${
-              kpi.trend === "up" ? "text-sage" : "text-muted-foreground"
-            }`}
-          >
-            {kpi.delta}
+          <p className="mt-3 text-xs font-medium text-muted-foreground">
+            {kpi.subtitle}
           </p>
         </div>
       ))}

@@ -1,25 +1,27 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { properties } from "@/lib/mock-data";
-import { StatusDot } from "@/components/ui/status-dot";
+import Link from "next/link";
+import { ImovelStatusDot } from "@/components/imoveis/imovel-status";
 import { Toggle } from "@/components/ui/toggle";
+import { formatCurrency } from "@/lib/format";
+import type { ImovelStatus } from "@/lib/supabase/types";
 
-const currency = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-  maximumFractionDigits: 0,
-});
+export type PropertiesTableItem = {
+  id: string;
+  titulo: string;
+  cidade: string | null;
+  proprietario: string | null;
+  valor: number | null;
+  status: ImovelStatus;
+};
 
-export function PropertiesTable() {
+export function PropertiesTable({ items }: { items: PropertiesTableItem[] }) {
   const [onlyActive, setOnlyActive] = useState(false);
 
   const rows = useMemo(
-    () =>
-      onlyActive
-        ? properties.filter((property) => property.status !== "Vendido")
-        : properties,
-    [onlyActive],
+    () => (onlyActive ? items.filter((item) => item.status === "ativo") : items),
+    [items, onlyActive],
   );
 
   return (
@@ -68,24 +70,28 @@ export function PropertiesTable() {
               className="group border-b border-line transition-colors duration-150 last:border-0 hover:bg-surface"
             >
               <td className="py-4 pr-3">
-                <p className="font-medium text-ink">{property.title}</p>
-                <p className="mt-0.5 font-mono text-xs text-muted-foreground">
-                  {property.id} · {property.neighborhood}
-                </p>
+                <Link
+                  href={`/imoveis/${property.id}`}
+                  className="font-medium text-ink underline-offset-4 group-hover:underline"
+                >
+                  {property.titulo}
+                </Link>
+                {property.cidade ? (
+                  <p className="mt-0.5 font-mono text-xs text-muted-foreground">
+                    {property.cidade}
+                  </p>
+                ) : null}
               </td>
               <td className="px-3 py-4 text-ink max-md:hidden">
-                {property.owner}
+                {property.proprietario ?? "—"}
               </td>
               <td className="px-3 py-4">
                 <p className="font-mono text-ink">
-                  {currency.format(property.value)}
-                </p>
-                <p className="mt-0.5 font-mono text-xs text-muted-foreground">
-                  {property.area} m²
+                  {formatCurrency(property.valor)}
                 </p>
               </td>
               <td className="py-4 pl-3">
-                <StatusDot status={property.status} />
+                <ImovelStatusDot status={property.status} />
               </td>
             </tr>
           ))}

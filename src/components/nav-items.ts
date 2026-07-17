@@ -16,38 +16,33 @@ export const navItems: NavItem[] = [
     href: "/imoveis",
     children: [
       { label: "Todos os imóveis", href: "/imoveis" },
-      { label: "Disponíveis", href: "/imoveis/disponiveis" },
-      { label: "Em negociação", href: "/imoveis/negociacao" },
       { label: "Cadastrar imóvel", href: "/imoveis/novo" },
     ],
   },
   {
+    label: "Leads",
+    href: "/leads",
+    children: [
+      { label: "Todos os leads", href: "/leads" },
+      { label: "Novo lead", href: "/leads/novo" },
+    ],
+  },
+  {
     label: "Clientes",
-    href: "/clientes",
+    href: "/proprietarios",
     children: [
-      { label: "Carteira de clientes", href: "/clientes" },
-      { label: "Leads", href: "/clientes/leads" },
-      { label: "Proprietários", href: "/clientes/proprietarios" },
-      { label: "Novo contato", href: "/clientes/novo" },
+      { label: "Proprietários", href: "/proprietarios" },
+      { label: "Cadastrar proprietário", href: "/proprietarios/novo" },
     ],
   },
   {
-    label: "Contratos",
-    href: "/contratos",
+    label: "Parceiros",
+    href: "/parceiros",
     children: [
-      { label: "Contratos ativos", href: "/contratos" },
-      { label: "A vencer (30 dias)", href: "/contratos/a-vencer" },
-      { label: "Encerrados", href: "/contratos/encerrados" },
-      { label: "Novo contrato", href: "/contratos/novo" },
-    ],
-  },
-  {
-    label: "Agenda",
-    href: "/agenda",
-    children: [
-      { label: "Visitas agendadas", href: "/agenda" },
-      { label: "Compromissos", href: "/agenda/compromissos" },
-      { label: "Agendar visita", href: "/agenda/nova-visita" },
+      { label: "Todos os parceiros", href: "/parceiros" },
+      { label: "Corretores", href: "/parceiros?tipo=corretor" },
+      { label: "Captadores", href: "/parceiros?tipo=captador" },
+      { label: "Cadastrar parceiro", href: "/parceiros/novo" },
     ],
   },
 ];

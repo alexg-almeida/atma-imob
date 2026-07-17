@@ -1,37 +1,45 @@
-import { portfolioBreakdown, type PropertyStatus } from "@/lib/mock-data";
+import { statusColors } from "@/lib/imoveis/constants";
+import type { ImovelStatus } from "@/lib/supabase/types";
 
-const STATUS_COLORS: Record<PropertyStatus, string> = {
-  Disponível: "var(--color-sage)",
-  Reservado: "var(--color-gold)",
-  Alugado: "var(--color-slate)",
-  Vendido: "var(--color-ink)",
+export type PortfolioItem = {
+  status: ImovelStatus;
+  label: string;
+  count: number;
 };
 
-const total = portfolioBreakdown.reduce((sum, item) => sum + item.count, 0);
+export function PortfolioComposition({ items }: { items: PortfolioItem[] }) {
+  const total = items.reduce((sum, item) => sum + item.count, 0);
 
-export function PortfolioComposition() {
+  if (total === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Nenhum imóvel cadastrado ainda.
+      </p>
+    );
+  }
+
   return (
     <div>
       <div
         className="flex h-2.5 w-full overflow-hidden rounded-full"
         role="img"
-        aria-label={`Composição da carteira: ${portfolioBreakdown
-          .map((item) => `${item.status} ${item.count}`)
+        aria-label={`Composição da carteira: ${items
+          .map((item) => `${item.label} ${item.count}`)
           .join(", ")}`}
       >
-        {portfolioBreakdown.map((item) => (
+        {items.map((item) => (
           <div
             key={item.status}
             style={{
               width: `${(item.count / total) * 100}%`,
-              backgroundColor: STATUS_COLORS[item.status],
+              backgroundColor: statusColors[item.status],
             }}
           />
         ))}
       </div>
 
       <ul className="mt-6">
-        {portfolioBreakdown.map((item) => (
+        {items.map((item) => (
           <li
             key={item.status}
             className="flex items-baseline justify-between border-b border-line py-3.5 last:border-0"
@@ -39,10 +47,10 @@ export function PortfolioComposition() {
             <span className="flex items-center gap-2.5 text-sm text-ink">
               <span
                 className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: STATUS_COLORS[item.status] }}
+                style={{ backgroundColor: statusColors[item.status] }}
                 aria-hidden
               />
-              {item.status}
+              {item.label}
             </span>
             <span className="flex items-baseline gap-3">
               <span className="font-mono text-sm text-ink">{item.count}</span>

@@ -158,6 +158,14 @@
   html {
     @apply font-sans;
   }
+
+  /* html2canvas (Book em PDF) não interpreta oklab()/color-mix() — a regra
+     `outline-ring/50` acima gera oklab() em todo elemento via herança do
+     seletor universal. Sem isto, a captura das páginas falha inteira. */
+  [data-book-page],
+  [data-book-page] * {
+    outline-color: transparent;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

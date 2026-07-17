@@ -1,11 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
-import { CaretDown, MagnifyingGlass } from "@phosphor-icons/react";
+import { CaretDown, MagnifyingGlass, SignOut } from "@phosphor-icons/react";
 import { navItems } from "./nav-items";
-import { BrandMark } from "./brand-mark";
 
 const glassPanel =
   "rounded-2xl border border-white/50 bg-white/35 backdrop-blur-[28px] backdrop-saturate-200 " +
@@ -15,7 +15,7 @@ const glassPanel =
 const panelVisible =
   "pointer-events-auto translate-y-0 opacity-100";
 
-export function Masthead() {
+export function Masthead({ userName }: { userName?: string }) {
   const pathname = usePathname();
   const [openHref, setOpenHref] = useState<string | null>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -43,16 +43,15 @@ export function Masthead() {
   return (
     <header className="relative z-40 border-b border-line">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 pt-7 pb-5">
-        <Link href="/" className="flex items-center gap-3">
-          <BrandMark className="h-7 w-7 text-ink" />
-          <span className="text-lg font-semibold tracking-[0.28em] text-ink uppercase">
-            Atma
-          </span>
-          <span className="mt-px hidden border-l border-line pl-3 text-[11px] leading-tight tracking-[0.14em] text-muted-foreground uppercase sm:block">
-            Consultoria
-            <br />
-            Imobiliária
-          </span>
+        <Link href="/" className="flex shrink-0 items-center">
+          <Image
+            src="/brand/atma-logo.png"
+            alt="Atma Consultoria Imobiliária"
+            width={763}
+            height={257}
+            priority
+            className="h-12 w-[143px] shrink-0 aspect-[763/257]"
+          />
         </Link>
 
         <div className="flex items-center gap-5">
@@ -65,11 +64,23 @@ export function Masthead() {
             />
           </label>
           <div className="text-right">
-            <p className="text-sm font-semibold text-ink">Luiza Ferraz</p>
+            <p className="text-sm font-semibold text-ink">
+              {userName ?? "Equipe Atma"}
+            </p>
             <p className="text-[11px] tracking-[0.08em] text-muted-foreground uppercase">
-              Gestão de carteira
+              Equipe interna
             </p>
           </div>
+          <form action="/auth/signout" method="post">
+            <button
+              type="submit"
+              title="Sair"
+              aria-label="Sair"
+              className="flex h-8 w-8 items-center justify-center rounded-sm border border-line text-muted-foreground transition-colors duration-150 hover:border-strong-line hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            >
+              <SignOut size={15} aria-hidden />
+            </button>
+          </form>
         </div>
       </div>
 

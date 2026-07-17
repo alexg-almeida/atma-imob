@@ -166,7 +166,7 @@ Sistema flat por completo: profundidade vem de réguas (2px tinta para abrir se�
 ## 5. Components
 
 ### Masthead / Navigation
-- Faixa superior com marca (ícone de barras + "ATMA" tracking 0.28em), busca sublinhada e identificação do usuário; abaixo, navegação horizontal em caixa alta.
+- Faixa superior com a logo oficial da Atma (lockup de barras + wordmark "ATMA" + "Consultoria Imobiliária", `public/brand/atma-logo.png`), busca sublinhada e identificação do usuário; abaixo, navegação horizontal em caixa alta.
 - Item ativo: sublinhado 2px em azul de ação + texto tinta. Inativo: texto grafite, hover para tinta. Nunca fundo preenchido.
 
 ### Buttons

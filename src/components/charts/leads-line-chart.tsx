@@ -9,7 +9,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { leadsPerMonth } from "@/lib/mock-data";
 
 const PRIMARY = "#005eb8";
 const LINE = "#d8dadb";
@@ -17,11 +16,17 @@ const MUTED = "#5c6366";
 const INK = "#222222";
 const BG = "#f5f5f5";
 
-export function LeadsLineChart() {
+export type LeadsPorMes = { month: string; leads: number };
+
+export function LeadsLineChart({ data }: { data: LeadsPorMes[] }) {
+  const max = Math.max(4, ...data.map((d) => d.leads));
+  const passo = Math.ceil(max / 3);
+  const ticks = [0, passo, passo * 2, passo * 3];
+
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={leadsPerMonth} margin={{ top: 12, right: 8, left: 0, bottom: 0 }}>
+        <LineChart data={data} margin={{ top: 12, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid vertical={false} stroke={LINE} strokeDasharray="2 4" />
           <XAxis
             dataKey="month"
@@ -34,7 +39,8 @@ export function LeadsLineChart() {
             axisLine={false}
             tickLine={false}
             width={36}
-            ticks={[0, 12, 24, 36]}
+            ticks={ticks}
+            allowDecimals={false}
             tick={{ fill: MUTED, fontSize: 11, fontFamily: "var(--font-mono)" }}
           />
           <Tooltip
