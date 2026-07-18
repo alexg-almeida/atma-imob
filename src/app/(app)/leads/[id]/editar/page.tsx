@@ -77,14 +77,14 @@ export default async function EditarLeadPage(
 
   return (
     <>
-      <div className="pt-12 pb-10">
+      <div className="pt-8 pb-6">
         <Link
           href={`/leads/${id}`}
           className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase transition-colors duration-150 hover:text-ink"
         >
           ← Detalhe do lead
         </Link>
-        <h1 className="mt-4 text-4xl font-bold tracking-tight text-ink">
+        <h1 className="mt-4 text-2xl font-bold tracking-tight text-ink">
           Editar lead
         </h1>
       </div>

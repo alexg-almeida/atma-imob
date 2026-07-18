@@ -16,6 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MaskedInput } from "@/components/ui/masked-input";
 import { maskCpf, maskPhone } from "@/lib/masks";
@@ -433,27 +434,24 @@ export function ProprietarioForm({
         ) : null}
 
         <div className="flex flex-col gap-3 border-t border-line pt-6 sm:flex-row sm:items-center">
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-sm bg-primary px-6 py-3 text-[13px] font-semibold tracking-[0.12em] text-white uppercase transition-colors duration-150 ease-out hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-60"
-          >
+          <Button type="submit" size="lg" disabled={saving}>
             {saving
               ? "Salvando…"
               : isEdit
                 ? "Salvar alterações"
                 : "Cadastrar proprietário"}
-          </button>
-          <Link
-            href={
-              isEdit && proprietario
-                ? `/proprietarios/${proprietario.id}`
-                : "/proprietarios"
-            }
-            className="rounded-sm px-4 py-3 text-center text-[13px] font-semibold tracking-[0.12em] text-muted-foreground uppercase transition-colors duration-150 hover:text-ink"
-          >
-            Cancelar
-          </Link>
+          </Button>
+          <Button variant="ghost" size="lg" asChild>
+            <Link
+              href={
+                isEdit && proprietario
+                  ? `/proprietarios/${proprietario.id}`
+                  : "/proprietarios"
+              }
+            >
+              Cancelar
+            </Link>
+          </Button>
         </div>
       </form>
     </Form>

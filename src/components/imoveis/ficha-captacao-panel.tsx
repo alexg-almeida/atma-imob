@@ -8,6 +8,7 @@ import {
   WhatsappLogo,
 } from "@phosphor-icons/react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { gerarFichaCaptacaoPdf } from "@/lib/pdf/ficha-captacao";
 import { formatDate } from "@/lib/format";
@@ -45,6 +46,8 @@ export function FichaCaptacaoPanel({
   proprietarios,
   fichas: fichasIniciais,
   tituloImovel,
+  termoTitulo,
+  termoCorpo,
 }: {
   imovel: Imovel;
   tipoNome: string;
@@ -52,6 +55,8 @@ export function FichaCaptacaoPanel({
   proprietarios: ProprietarioVinculo[];
   fichas: ImovelFichaCaptacao[];
   tituloImovel: string;
+  termoTitulo: string | null;
+  termoCorpo: string | null;
 }) {
   const router = useRouter();
   const [fichas, setFichas] = useState(fichasIniciais);
@@ -62,11 +67,13 @@ export function FichaCaptacaoPanel({
     setGerando(true);
     const supabase = createClient();
     try {
-      const doc = gerarFichaCaptacaoPdf({
+      const doc = await gerarFichaCaptacaoPdf({
         imovel,
         tipoNome,
         captadorNome,
         proprietarios,
+        termoTitulo,
+        termoCorpo,
       });
       const blob = doc.output("blob");
       const path = `${imovel.id}/${crypto.randomUUID()}.pdf`;
@@ -154,15 +161,10 @@ export function FichaCaptacaoPanel({
         </p>
       </div>
 
-      <button
-        type="button"
-        onClick={handleGerar}
-        disabled={gerando}
-        className="flex items-center gap-2 rounded-sm bg-primary px-4 py-3 text-[13px] font-semibold tracking-[0.12em] text-white uppercase transition-colors duration-150 ease-out hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-      >
+      <Button type="button" onClick={handleGerar} disabled={gerando}>
         <FileArrowDown size={16} aria-hidden />
         {gerando ? "Gerando…" : "Gerar ficha de captação em PDF"}
-      </button>
+      </Button>
 
       {ultima ? (
         <div className="flex flex-wrap items-center gap-3 rounded-sm bg-surface px-4 py-3">
@@ -175,20 +177,24 @@ export function FichaCaptacaoPanel({
             Última ficha: {statusLabels[ultima.status]} em {formatDate(ultima.created_at)}
           </span>
           <div className="ml-auto flex items-center gap-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
+              className="px-3 py-2 text-[11px] tracking-[0.1em]"
               onClick={() => compartilharWhatsapp(ultima)}
-              className="flex items-center gap-1.5 rounded-sm border border-line px-3 py-2 text-[11px] font-semibold tracking-[0.1em] text-ink uppercase transition-colors hover:border-strong-line"
             >
               <WhatsappLogo size={14} aria-hidden /> WhatsApp
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
+              className="px-3 py-2 text-[11px] tracking-[0.1em]"
               onClick={() => compartilharEmail(ultima)}
-              className="flex items-center gap-1.5 rounded-sm border border-line px-3 py-2 text-[11px] font-semibold tracking-[0.1em] text-ink uppercase transition-colors hover:border-strong-line"
             >
               <EnvelopeSimple size={14} aria-hidden /> E-mail
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}

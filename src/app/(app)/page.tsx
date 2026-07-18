@@ -154,9 +154,9 @@ export default async function Home() {
 
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-4 pt-12 pb-10">
+      <div className="flex flex-wrap items-end justify-between gap-4 pt-8 pb-6">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-ink">
+          <h1 className="text-2xl font-bold tracking-tight text-ink">
             Painel geral
           </h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">

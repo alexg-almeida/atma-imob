@@ -8,6 +8,8 @@ import { ImovelStatusDot } from "@/components/imoveis/imovel-status";
 import { DocumentosManager } from "@/components/imoveis/documentos-manager";
 import { GaleriaImovel } from "@/components/imoveis/galeria-imovel";
 import { GerarBookButton } from "@/components/imoveis/book/gerar-book-button";
+import { ExcluirRegistroButton } from "@/components/excluir-registro-button";
+import { Button } from "@/components/ui/button";
 import { finalidadeLabels } from "@/lib/imoveis/constants";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type {
@@ -69,7 +71,7 @@ export default async function ImovelPage(props: PageProps<"/imoveis/[id]">) {
   if (!data) notFound();
   const imovel = data as ImovelDetalhe;
 
-  const [{ data: fotos }, { data: documentos }, { data: vinculos }, podeEditar] =
+  const [{ data: fotos }, { data: documentos }, { data: vinculos }, podeEditar, podeExcluir] =
     await Promise.all([
       supabase
         .from("imoveis_fotos")
@@ -91,6 +93,7 @@ export default async function ImovelPage(props: PageProps<"/imoveis/[id]">) {
         .eq("imovel_id", id)
         .eq("ativo", true),
       temPermissao("imoveis", "editar"),
+      temPermissao("imoveis", "excluir"),
     ]);
 
   const galeria = (fotos ?? []) as ImovelFoto[];
@@ -158,7 +161,7 @@ export default async function ImovelPage(props: PageProps<"/imoveis/[id]">) {
 
   return (
     <>
-      <div className="pt-12 pb-8">
+      <div className="pt-8 pb-5">
         <Link
           href="/imoveis"
           className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase transition-colors duration-150 hover:text-ink"
@@ -170,7 +173,7 @@ export default async function ImovelPage(props: PageProps<"/imoveis/[id]">) {
             <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
               {finalidadeLabels[imovel.finalidade]}
             </p>
-            <h1 className="mt-1 text-4xl font-bold tracking-tight text-ink">
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink">
               {titulo}
             </h1>
             {imovel.frase_destaque ? (
@@ -183,20 +186,25 @@ export default async function ImovelPage(props: PageProps<"/imoveis/[id]">) {
             <ImovelStatusDot status={imovel.status} />
             <GerarBookButton imovel={imovel} fotos={galeria} />
             {podeEditar ? (
-              <Link
-                href={`/imoveis/${id}/ficha-captacao`}
-                className="flex items-center gap-2 rounded-sm border border-line px-4 py-2.5 text-[12px] font-semibold tracking-[0.12em] text-ink uppercase transition-colors duration-150 hover:border-strong-line"
-              >
-                Ficha de captação
-              </Link>
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/imoveis/${id}/ficha-captacao`}>Ficha de captação</Link>
+              </Button>
             ) : null}
             {podeEditar ? (
-              <Link
-                href={`/imoveis/${id}/editar`}
-                className="flex items-center gap-2 rounded-sm bg-primary px-4 py-2.5 text-[12px] font-semibold tracking-[0.12em] text-white uppercase transition-colors duration-150 ease-out hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-              >
-                <PencilSimple size={14} aria-hidden /> Editar
-              </Link>
+              <Button size="sm" asChild>
+                <Link href={`/imoveis/${id}/editar`}>
+                  <PencilSimple size={14} aria-hidden /> Editar
+                </Link>
+              </Button>
+            ) : null}
+            {podeExcluir ? (
+              <ExcluirRegistroButton
+                tabela="imoveis"
+                id={id}
+                redirectTo="/imoveis"
+                titulo="Excluir imóvel"
+                descricao="O imóvel será removido da listagem. Essa ação não pode ser desfeita."
+              />
             ) : null}
           </div>
         </div>

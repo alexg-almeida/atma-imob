@@ -70,6 +70,7 @@ export type ImovelFoto = {
   ordem: number;
   capa: boolean;
   destaque: string | null;
+  usar_no_book: boolean;
   ativo: boolean;
 };
 
@@ -214,6 +215,21 @@ export type ImovelFichaCaptacao = {
   assinatura_url: string | null;
   assinado_em: string | null;
   hash_documento: string | null;
+  created_at: string;
+  updated_at: string;
+  ativo: boolean;
+};
+
+/**
+ * Texto do Termo de Autorização e Aceite anexado ao final da Ficha de
+ * Captação — editável na tela Admin (só superadmin), com variáveis
+ * `{{chave}}` substituídas na geração do PDF. Ver `TERMO_VARIAVEIS` em
+ * src/lib/pdf/ficha-captacao.ts para a lista de variáveis disponíveis.
+ */
+export type FichaCaptacaoConfiguracao = {
+  id: string;
+  titulo: string;
+  corpo: string;
   created_at: string;
   updated_at: string;
   ativo: boolean;

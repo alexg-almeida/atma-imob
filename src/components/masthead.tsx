@@ -4,8 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
-import { CaretDown, MagnifyingGlass, SignOut } from "@phosphor-icons/react";
-import { navItems } from "./nav-items";
+import { CaretDown, SignOut } from "@phosphor-icons/react";
+import { navItems, adminNavItem } from "./nav-items";
 
 const glassPanel =
   "rounded-2xl border border-white/50 bg-white/35 backdrop-blur-[28px] backdrop-saturate-200 " +
@@ -15,10 +15,17 @@ const glassPanel =
 const panelVisible =
   "pointer-events-auto translate-y-0 opacity-100";
 
-export function Masthead({ userName }: { userName?: string }) {
+export function Masthead({
+  userName,
+  isAdmin = false,
+}: {
+  userName?: string;
+  isAdmin?: boolean;
+}) {
   const pathname = usePathname();
   const [openHref, setOpenHref] = useState<string | null>(null);
   const navRef = useRef<HTMLElement>(null);
+  const items = isAdmin ? [...navItems, adminNavItem] : navItems;
 
   useEffect(() => {
     if (openHref === null) return;
@@ -55,14 +62,6 @@ export function Masthead({ userName }: { userName?: string }) {
         </Link>
 
         <div className="flex items-center gap-5">
-          <label className="hidden items-center gap-2 border-b border-line pb-1 focus-within:border-primary md:flex">
-            <MagnifyingGlass size={15} className="text-muted-foreground" aria-hidden />
-            <input
-              type="search"
-              placeholder="Buscar imóvel, cliente, contrato…"
-              className="w-56 bg-transparent text-sm text-ink outline-none placeholder:text-muted-foreground"
-            />
-          </label>
           <div className="text-right">
             <p className="text-sm font-semibold text-ink">
               {userName ?? "Equipe Atma"}
@@ -89,7 +88,7 @@ export function Masthead({ userName }: { userName?: string }) {
         className="mx-auto max-w-6xl px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-lg:overflow-x-auto lg:overflow-visible"
       >
         <ul className="-mb-px flex gap-8 whitespace-nowrap">
-          {navItems.map((item) => {
+          {items.map((item) => {
             const hasChildren = Boolean(item.children?.length);
             const isOpen = openHref === item.href;
             const isActive =

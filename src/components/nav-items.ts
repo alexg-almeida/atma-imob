@@ -46,3 +46,12 @@ export const navItems: NavItem[] = [
     ],
   },
 ];
+
+/** Só aparece no menu para quem tem permissão no módulo "core" (superadmin). */
+export const adminNavItem: NavItem = {
+  label: "Admin",
+  href: "/admin/ficha-captacao",
+  children: [
+    { label: "Termo da ficha de captação", href: "/admin/ficha-captacao" },
+  ],
+};

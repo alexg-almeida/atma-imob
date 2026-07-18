@@ -18,7 +18,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Star, Trash, UploadSimple } from "@phosphor-icons/react";
+import { Book, Star, Trash, UploadSimple } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -42,10 +42,14 @@ function SortableFoto({
   foto,
   onCapa,
   onDelete,
+  onToggleBook,
+  mostrarBook,
 }: {
   foto: ImovelFoto;
   onCapa: () => void;
   onDelete: () => void;
+  onToggleBook: () => void;
+  mostrarBook: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: foto.id });
@@ -93,6 +97,22 @@ function SortableFoto({
             className="flex h-7 w-7 items-center justify-center rounded-sm bg-white/90 text-ink shadow-sm transition-colors hover:bg-white"
           >
             <Star size={14} aria-hidden />
+          </button>
+        ) : null}
+        {mostrarBook ? (
+          <button
+            type="button"
+            onClick={onToggleBook}
+            title={foto.usar_no_book ? "Remover do book" : "Usar no book"}
+            aria-label={foto.usar_no_book ? "Remover do book" : "Usar no book"}
+            aria-pressed={foto.usar_no_book}
+            className={`flex h-7 w-7 items-center justify-center rounded-sm shadow-sm transition-colors ${
+              foto.usar_no_book
+                ? "bg-primary text-white hover:bg-primary-hover"
+                : "bg-white/90 text-ink hover:bg-white"
+            }`}
+          >
+            <Book size={14} weight={foto.usar_no_book ? "fill" : "regular"} aria-hidden />
           </button>
         ) : null}
         <button
@@ -229,6 +249,22 @@ export function FotosManager({
     router.refresh();
   }
 
+  async function handleUsarNoBook(foto: ImovelFoto) {
+    const supabase = createClient();
+    const novoValor = !foto.usar_no_book;
+    const { error } = await supabase
+      .from("imoveis_fotos")
+      .update({ usar_no_book: novoValor })
+      .eq("id", foto.id);
+    if (error) {
+      toast.error(`Falha ao atualizar a foto: ${error.message}`);
+      return;
+    }
+    setFotos((prev) =>
+      prev.map((f) => (f.id === foto.id ? { ...f, usar_no_book: novoValor } : f)),
+    );
+  }
+
   async function handleDelete(foto: ImovelFoto) {
     const supabase = createClient();
     const path = storagePath(foto.url);
@@ -263,6 +299,9 @@ export function FotosManager({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <p className="text-sm text-muted-foreground">
           Arraste para reordenar · a estrela define a foto de capa.
+          {fotos.length > 6
+            ? " Mais de 6 fotos — marque o ícone de livro nas que devem entrar no book."
+            : ""}
         </p>
         <label className="flex cursor-pointer items-center gap-2 rounded-sm border border-line px-4 py-2.5 text-[12px] font-semibold tracking-[0.12em] text-ink uppercase transition-colors duration-150 hover:border-strong-line">
           <UploadSimple size={14} aria-hidden />
@@ -300,6 +339,8 @@ export function FotosManager({
                   foto={foto}
                   onCapa={() => handleCapa(foto)}
                   onDelete={() => setConfirmDelete(foto)}
+                  onToggleBook={() => handleUsarNoBook(foto)}
+                  mostrarBook={fotos.length > 6 && !foto.capa}
                 />
               ))}
             </div>

@@ -65,6 +65,7 @@ export default async function FichaCaptacaoPage(
     { data: vinculos },
     { data: vinculosCompletos },
     { data: fichas },
+    { data: termoConfig },
   ] = await Promise.all([
     supabase.from("imoveis_tipos").select("id, nome").eq("ativo", true).order("nome"),
     supabase
@@ -94,6 +95,13 @@ export default async function FichaCaptacaoPage(
       .eq("imovel_id", id)
       .eq("ativo", true)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("fichas_captacao_configuracoes")
+      .select("titulo, corpo")
+      .eq("ativo", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const tipo = imovel.tipo;
@@ -114,7 +122,7 @@ export default async function FichaCaptacaoPage(
 
   return (
     <>
-      <div className="pt-12 pb-10">
+      <div className="pt-8 pb-6">
         <Link
           href={`/imoveis/${id}`}
           className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase transition-colors duration-150 hover:text-ink"
@@ -124,7 +132,7 @@ export default async function FichaCaptacaoPage(
         <p className="mt-4 text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
           {finalidadeLabels[imovel.finalidade]}
         </p>
-        <h1 className="mt-1 text-4xl font-bold tracking-tight text-ink">
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink">
           Ficha de captação · {tituloImovel}
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
@@ -153,6 +161,8 @@ export default async function FichaCaptacaoPage(
             proprietarios={proprietariosParaPdf}
             fichas={(fichas ?? []) as ImovelFichaCaptacao[]}
             tituloImovel={tituloImovel}
+            termoTitulo={termoConfig?.titulo ?? null}
+            termoCorpo={termoConfig?.corpo ?? null}
           />
         </aside>
       </div>

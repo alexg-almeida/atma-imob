@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { parceiroTipoLabels, parceiroTipos } from "@/lib/supabase/types";
 import type { Parceiro, ParceiroTipo } from "@/lib/supabase/types";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Parceiros · Atma CRM",
@@ -49,21 +50,18 @@ export default async function ParceirosPage(props: PageProps<"/parceiros">) {
 
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-4 pt-12 pb-10">
+      <div className="flex flex-wrap items-end justify-between gap-4 pt-8 pb-6">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-ink">
+          <h1 className="text-2xl font-bold tracking-tight text-ink">
             Parceiros
           </h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
             Corretores e captadores que atuam com a Atma.
           </p>
         </div>
-        <Link
-          href="/parceiros/novo"
-          className="rounded-sm bg-primary px-4 py-3 text-[13px] font-semibold tracking-[0.12em] text-white uppercase transition-colors duration-150 ease-out hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-        >
-          Novo parceiro
-        </Link>
+        <Button asChild>
+          <Link href="/parceiros/novo">Novo parceiro</Link>
+        </Button>
       </div>
 
       <form

@@ -21,6 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { MaskedInput } from "@/components/ui/masked-input";
@@ -186,8 +187,8 @@ function defaultValuesFrom(
     frase_destaque: imovel?.frase_destaque ?? "",
     descricao: imovel?.descricao ?? "",
     endereco_completo: imovel?.endereco_completo ?? "",
-    cidade: imovel?.cidade ?? "Ribeirão Preto",
-    estado: imovel?.estado ?? "SP",
+    cidade: imovel?.cidade ?? "",
+    estado: imovel?.estado ?? "",
     cep: imovel?.cep ?? "",
     data_captacao: imovel?.data_captacao ?? "",
     captador_id: imovel?.captador_id ?? "",
@@ -567,8 +568,13 @@ export function ImovelForm({
             />
 
             <div className="grid grid-cols-2 gap-x-10 gap-y-7 sm:grid-cols-4">
-              <TextField control={form.control} name="cidade" label="Cidade" />
-              <TextField control={form.control} name="estado" label="UF" />
+              <TextField
+                control={form.control}
+                name="cidade"
+                label="Cidade"
+                placeholder="Ribeirão Preto"
+              />
+              <TextField control={form.control} name="estado" label="UF" placeholder="SP" />
               <TextField control={form.control} name="cep" label="CEP" mask="cep" placeholder="14000-000" />
               <FormField
                 control={form.control}
@@ -865,8 +871,11 @@ export function ImovelForm({
             ) : null}
 
             {proprietarios.length > 0 ? (
-              <button
+              <Button
                 type="button"
+                variant="link"
+                size="sm"
+                className="px-0 py-0"
                 onClick={() =>
                   append({
                     proprietario_id: "",
@@ -874,28 +883,22 @@ export function ImovelForm({
                     principal: fields.length === 0,
                   })
                 }
-                className="flex items-center gap-2 text-[12px] font-semibold tracking-[0.12em] text-primary uppercase transition-colors hover:text-primary-hover"
               >
                 <Plus size={14} aria-hidden /> Adicionar proprietário
-              </button>
+              </Button>
             ) : null}
           </TabsContent>
         </Tabs>
 
         <div className="mt-10 flex flex-col gap-3 border-t border-line pt-6 sm:flex-row sm:items-center">
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-sm bg-primary px-6 py-3 text-[13px] font-semibold tracking-[0.12em] text-white uppercase transition-colors duration-150 ease-out hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-60"
-          >
+          <Button type="submit" size="lg" disabled={saving}>
             {saving ? "Salvando…" : isEdit ? "Salvar alterações" : "Cadastrar imóvel"}
-          </button>
-          <Link
-            href={isEdit && imovel ? `/imoveis/${imovel.id}` : "/imoveis"}
-            className="rounded-sm px-4 py-3 text-center text-[13px] font-semibold tracking-[0.12em] text-muted-foreground uppercase transition-colors duration-150 hover:text-ink"
-          >
-            Cancelar
-          </Link>
+          </Button>
+          <Button variant="ghost" size="lg" asChild>
+            <Link href={isEdit && imovel ? `/imoveis/${imovel.id}` : "/imoveis"}>
+              Cancelar
+            </Link>
+          </Button>
           {Object.keys(form.formState.errors).length > 0 ? (
             <p className="text-xs text-alert sm:ml-auto">
               Há campos com erro — revise as abas destacadas.

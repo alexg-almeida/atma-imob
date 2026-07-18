@@ -10,6 +10,8 @@ import {
   InteracoesManager,
   type InteracaoComUsuario,
 } from "@/components/leads/interacoes-manager";
+import { ExcluirRegistroButton } from "@/components/excluir-registro-button";
+import { Button } from "@/components/ui/button";
 import { finalidadeLabels } from "@/lib/imoveis/constants";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type {
@@ -69,9 +71,10 @@ export default async function LeadPage(props: PageProps<"/leads/[id]">) {
   if (!data) notFound();
   const lead = data as unknown as LeadDetalhe;
 
-  const [podeEditar, podeRegistrar, { data: interacoes }] = await Promise.all([
+  const [podeEditar, podeRegistrar, podeExcluir, { data: interacoes }] = await Promise.all([
     temPermissao("leads", "editar"),
     temPermissao("leads", "criar"),
+    temPermissao("leads", "excluir"),
     supabase
       .from("leads_interacoes")
       .select("*, usuario:core_perfis(nome_completo)")
@@ -82,7 +85,7 @@ export default async function LeadPage(props: PageProps<"/leads/[id]">) {
 
   return (
     <>
-      <div className="pt-12 pb-10">
+      <div className="pt-8 pb-6">
         <Link
           href="/leads"
           className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase transition-colors duration-150 hover:text-ink"
@@ -108,19 +111,29 @@ export default async function LeadPage(props: PageProps<"/leads/[id]">) {
               <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
                 {lead.etapa?.nome ?? "Sem etapa"}
               </p>
-              <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink">
+              <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink">
                 {lead.nome_completo}
               </h1>
             </div>
           </div>
-          {podeEditar ? (
-            <Link
-              href={`/leads/${id}/editar`}
-              className="flex items-center gap-2 rounded-sm bg-primary px-4 py-2.5 text-[12px] font-semibold tracking-[0.12em] text-white uppercase transition-colors duration-150 ease-out hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-            >
-              <PencilSimple size={14} aria-hidden /> Editar
-            </Link>
-          ) : null}
+          <div className="flex flex-wrap items-center gap-3">
+            {podeEditar ? (
+              <Button size="sm" asChild>
+                <Link href={`/leads/${id}/editar`}>
+                  <PencilSimple size={14} aria-hidden /> Editar
+                </Link>
+              </Button>
+            ) : null}
+            {podeExcluir ? (
+              <ExcluirRegistroButton
+                tabela="leads"
+                id={id}
+                redirectTo="/leads"
+                titulo="Excluir lead"
+                descricao="O lead será removido da listagem. Essa ação não pode ser desfeita."
+              />
+            ) : null}
+          </div>
         </div>
       </div>
 

@@ -5,6 +5,8 @@ import { PencilSimple, UserCircleCheck } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
 import { temPermissao } from "@/lib/permissoes";
 import { ImovelStatusDot } from "@/components/imoveis/imovel-status";
+import { ExcluirRegistroButton } from "@/components/excluir-registro-button";
+import { Button } from "@/components/ui/button";
 import { finalidadeLabels } from "@/lib/imoveis/constants";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { parceiroTipoLabels } from "@/lib/supabase/types";
@@ -71,8 +73,9 @@ export default async function ParceiroPage(
   const ehCaptador = parceiro.tipo === "captador" || parceiro.tipo === "ambos";
   const ehCorretor = parceiro.tipo === "corretor" || parceiro.tipo === "ambos";
 
-  const [podeEditar, { data: imoveis }, { data: leads }] = await Promise.all([
+  const [podeEditar, podeExcluir, { data: imoveis }, { data: leads }] = await Promise.all([
     temPermissao("parceiros", "editar"),
+    temPermissao("parceiros", "excluir"),
     ehCaptador
       ? supabase
           .from("imoveis")
@@ -102,7 +105,7 @@ export default async function ParceiroPage(
 
   return (
     <>
-      <div className="pt-12 pb-10">
+      <div className="pt-8 pb-6">
         <Link
           href="/parceiros"
           className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase transition-colors duration-150 hover:text-ink"
@@ -114,7 +117,7 @@ export default async function ParceiroPage(
             <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
               {parceiroTipoLabels[parceiro.tipo]}
             </p>
-            <h1 className="mt-1 text-4xl font-bold tracking-tight text-ink">
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink">
               {parceiro.nome_completo}
             </h1>
             {parceiro.perfil ? (
@@ -124,14 +127,24 @@ export default async function ParceiroPage(
               </p>
             ) : null}
           </div>
-          {podeEditar ? (
-            <Link
-              href={`/parceiros/${id}/editar`}
-              className="flex items-center gap-2 rounded-sm bg-primary px-4 py-2.5 text-[12px] font-semibold tracking-[0.12em] text-white uppercase transition-colors duration-150 ease-out hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-            >
-              <PencilSimple size={14} aria-hidden /> Editar
-            </Link>
-          ) : null}
+          <div className="flex flex-wrap items-center gap-3">
+            {podeEditar ? (
+              <Button size="sm" asChild>
+                <Link href={`/parceiros/${id}/editar`}>
+                  <PencilSimple size={14} aria-hidden /> Editar
+                </Link>
+              </Button>
+            ) : null}
+            {podeExcluir ? (
+              <ExcluirRegistroButton
+                tabela="parceiros"
+                id={id}
+                redirectTo="/parceiros"
+                titulo="Excluir parceiro"
+                descricao="O parceiro será removido da listagem. Essa ação não pode ser desfeita."
+              />
+            ) : null}
+          </div>
         </div>
       </div>
 

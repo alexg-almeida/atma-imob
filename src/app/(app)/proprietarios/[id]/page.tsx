@@ -5,6 +5,8 @@ import { LockSimple, PencilSimple } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
 import { temPermissao } from "@/lib/permissoes";
 import { ImovelStatusDot } from "@/components/imoveis/imovel-status";
+import { ExcluirRegistroButton } from "@/components/excluir-registro-button";
+import { Button } from "@/components/ui/button";
 import { finalidadeLabels } from "@/lib/imoveis/constants";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type {
@@ -65,9 +67,10 @@ export default async function ProprietarioPage(
   if (!data) notFound();
   const proprietario = data as Proprietario;
 
-  const [podeEditar, podeFinanceiro, { data: vinculos }] = await Promise.all([
+  const [podeEditar, podeFinanceiro, podeExcluir, { data: vinculos }] = await Promise.all([
     temPermissao("proprietarios", "editar"),
     temPermissao("proprietarios", "financeiro"),
+    temPermissao("proprietarios", "excluir"),
     supabase
       .from("imoveis_proprietarios")
       .select(
@@ -94,7 +97,7 @@ export default async function ProprietarioPage(
 
   return (
     <>
-      <div className="pt-12 pb-10">
+      <div className="pt-8 pb-6">
         <Link
           href="/proprietarios"
           className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase transition-colors duration-150 hover:text-ink"
@@ -103,7 +106,7 @@ export default async function ProprietarioPage(
         </Link>
         <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-ink">
+            <h1 className="text-2xl font-bold tracking-tight text-ink">
               {proprietario.nome_completo}
             </h1>
             <p className="mt-2 font-mono text-xs text-muted-foreground">
@@ -115,14 +118,24 @@ export default async function ProprietarioPage(
                 .join(" · ") || " "}
             </p>
           </div>
-          {podeEditar ? (
-            <Link
-              href={`/proprietarios/${id}/editar`}
-              className="flex items-center gap-2 rounded-sm bg-primary px-4 py-2.5 text-[12px] font-semibold tracking-[0.12em] text-white uppercase transition-colors duration-150 ease-out hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-            >
-              <PencilSimple size={14} aria-hidden /> Editar
-            </Link>
-          ) : null}
+          <div className="flex flex-wrap items-center gap-3">
+            {podeEditar ? (
+              <Button size="sm" asChild>
+                <Link href={`/proprietarios/${id}/editar`}>
+                  <PencilSimple size={14} aria-hidden /> Editar
+                </Link>
+              </Button>
+            ) : null}
+            {podeExcluir ? (
+              <ExcluirRegistroButton
+                tabela="proprietarios"
+                id={id}
+                redirectTo="/proprietarios"
+                titulo="Excluir proprietário"
+                descricao="O proprietário será removido da listagem. Essa ação não pode ser desfeita."
+              />
+            ) : null}
+          </div>
         </div>
       </div>
 

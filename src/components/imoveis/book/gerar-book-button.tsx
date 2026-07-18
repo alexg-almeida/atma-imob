@@ -11,21 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { BookContent, type BookTemplate } from "@/components/imoveis/book/book-content";
+import { Button } from "@/components/ui/button";
+import { BookContent, fotosDoBook } from "@/components/imoveis/book/book-content";
 import { capturarPaginasComoPdf } from "@/lib/pdf/capturar-paginas";
+import { recortarImagemCoverFit } from "@/lib/pdf/recortar-imagem";
 import type { Imovel, ImovelFoto } from "@/lib/supabase/types";
 
-const templateLabels: Record<BookTemplate, string> = {
-  classico: "Clássico — fotos grandes, uma por página",
-  compacto: "Compacto — grade de fotos",
-};
+// Dimensões alvo dos recortes (2x o tamanho renderizado na página A4 de
+// 794px, para nitidez na captura em scale:2 do html2canvas).
+const BANNER_PX = { width: 1588, height: 440 } as const;
+const GRADE_PX = { width: 800, height: 600 } as const;
 
 export function GerarBookButton({
   imovel,
@@ -35,8 +30,8 @@ export function GerarBookButton({
   fotos: ImovelFoto[];
 }) {
   const [open, setOpen] = useState(false);
-  const [template, setTemplate] = useState<BookTemplate>("classico");
   const [gerando, setGerando] = useState(false);
+  const [recortes, setRecortes] = useState<Record<string, string>>({});
   const containerRef = useRef<HTMLDivElement>(null);
 
   async function handleGerar() {
@@ -46,8 +41,30 @@ export function GerarBookButton({
     }
     setGerando(true);
     try {
-      // Aguarda o React aplicar o template escolhido antes de capturar.
-      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const { capa, fotosGrade } = fotosDoBook(fotos);
+
+      const novosRecortes: Record<string, string> = {};
+      await Promise.all([
+        capa
+          ? recortarImagemCoverFit(capa.url, BANNER_PX.width, BANNER_PX.height).then((src) => {
+              if (src) novosRecortes[capa.id] = src;
+            })
+          : Promise.resolve(),
+        ...fotosGrade.map((foto) =>
+          recortarImagemCoverFit(foto.url, GRADE_PX.width, GRADE_PX.height).then((src) => {
+            if (src) novosRecortes[foto.id] = src;
+          }),
+        ),
+      ]);
+      setRecortes(novosRecortes);
+
+      // Duplo requestAnimationFrame: garante que o React aplicou os novos
+      // `src` (recortados) ao DOM antes de capturar — sem isso a primeira
+      // captura ainda pega as fotos originais (esticadas pelo object-fit,
+      // que o html2canvas não respeita de forma confiável).
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      );
 
       const paginas = Array.from(
         containerRef.current?.querySelectorAll<HTMLElement>("[data-book-page]") ?? [],
@@ -68,51 +85,25 @@ export function GerarBookButton({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-2 rounded-sm border border-line px-4 py-2.5 text-[12px] font-semibold tracking-[0.12em] text-ink uppercase transition-colors duration-150 hover:border-strong-line"
-      >
+      <Button type="button" variant="outline" size="sm" onClick={() => setOpen(true)}>
         <FileArrowDown size={14} aria-hidden /> Gerar book
-      </button>
+      </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Gerar book em PDF</DialogTitle>
             <DialogDescription>
-              Escolha o layout das fotos. O PDF é montado no seu navegador —
-              nenhum dado é enviado a um servidor nessa etapa.
+              Book compacto em uma página (A4 retrato) com capa, indicadores,
+              grade de fotos e descrição. Montado no seu navegador — nenhum
+              dado é enviado a um servidor nessa etapa.
             </DialogDescription>
           </DialogHeader>
 
-          <label className="flex flex-col gap-2">
-            <span className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
-              Template
-            </span>
-            <Select value={template} onValueChange={(v) => setTemplate(v as BookTemplate)}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(templateLabels) as BookTemplate[]).map((key) => (
-                  <SelectItem key={key} value={key}>
-                    {templateLabels[key]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </label>
-
           <DialogFooter>
-            <button
-              type="button"
-              onClick={handleGerar}
-              disabled={gerando}
-              className="rounded-sm bg-primary px-4 py-2.5 text-[12px] font-semibold tracking-[0.12em] text-white uppercase transition-colors duration-150 ease-out hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-            >
+            <Button type="button" size="sm" onClick={handleGerar} disabled={gerando}>
               {gerando ? "Gerando…" : "Gerar PDF"}
-            </button>
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -124,7 +115,7 @@ export function GerarBookButton({
         aria-hidden
         style={{ position: "fixed", top: 0, left: -10000, zIndex: -1 }}
       >
-        <BookContent imovel={imovel} fotos={fotos} template={template} />
+        <BookContent imovel={imovel} fotos={fotos} recortes={recortes} />
       </div>
     </>
   );

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { Button } from "@/components/ui/button";
 import {
   ImovelCard,
   type ImovelListItem,
@@ -110,21 +111,18 @@ export default async function ImoveisPage(props: PageProps<"/imoveis">) {
 
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-4 pt-12 pb-10">
+      <div className="flex flex-wrap items-end justify-between gap-4 pt-8 pb-6">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-ink">
+          <h1 className="text-2xl font-bold tracking-tight text-ink">
             Imóveis
           </h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
             Carteira de imóveis administrados pela Atma.
           </p>
         </div>
-        <Link
-          href="/imoveis/novo"
-          className="rounded-sm bg-primary px-4 py-3 text-[13px] font-semibold tracking-[0.12em] text-white uppercase transition-colors duration-150 ease-out hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-        >
-          Cadastrar imóvel
-        </Link>
+        <Button asChild>
+          <Link href="/imoveis/novo">Cadastrar imóvel</Link>
+        </Button>
       </div>
 
       <ImoveisFiltros
