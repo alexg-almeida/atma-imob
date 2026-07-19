@@ -71,30 +71,37 @@ export default async function ImovelPage(props: PageProps<"/imoveis/[id]">) {
   if (!data) notFound();
   const imovel = data as ImovelDetalhe;
 
-  const [{ data: fotos }, { data: documentos }, { data: vinculos }, podeEditar, podeExcluir] =
-    await Promise.all([
-      supabase
-        .from("imoveis_fotos")
-        .select("*")
-        .eq("imovel_id", id)
-        .eq("ativo", true)
-        .order("ordem"),
-      supabase
-        .from("imoveis_documentos")
-        .select("*")
-        .eq("imovel_id", id)
-        .eq("ativo", true)
-        .order("created_at"),
-      supabase
-        .from("imoveis_proprietarios")
-        .select(
-          "id, percentual_participacao, principal, proprietario:proprietarios(id, nome_completo)",
-        )
-        .eq("imovel_id", id)
-        .eq("ativo", true),
-      temPermissao("imoveis", "editar"),
-      temPermissao("imoveis", "excluir"),
-    ]);
+  const [
+    { data: fotos },
+    { data: documentos },
+    { data: vinculos },
+    podeEditar,
+    podeExcluir,
+    podeExcluirDefinitivamente,
+  ] = await Promise.all([
+    supabase
+      .from("imoveis_fotos")
+      .select("*")
+      .eq("imovel_id", id)
+      .eq("ativo", true)
+      .order("ordem"),
+    supabase
+      .from("imoveis_documentos")
+      .select("*")
+      .eq("imovel_id", id)
+      .eq("ativo", true)
+      .order("created_at"),
+    supabase
+      .from("imoveis_proprietarios")
+      .select(
+        "id, percentual_participacao, principal, proprietario:proprietarios(id, nome_completo)",
+      )
+      .eq("imovel_id", id)
+      .eq("ativo", true),
+    temPermissao("imoveis", "editar"),
+    temPermissao("imoveis", "excluir"),
+    temPermissao("core", "editar"),
+  ]);
 
   const galeria = (fotos ?? []) as ImovelFoto[];
 
@@ -204,6 +211,7 @@ export default async function ImovelPage(props: PageProps<"/imoveis/[id]">) {
                 redirectTo="/imoveis"
                 titulo="Excluir imóvel"
                 descricao="O imóvel será removido da listagem. Essa ação não pode ser desfeita."
+                podeExcluirDefinitivamente={podeExcluirDefinitivamente}
               />
             ) : null}
           </div>

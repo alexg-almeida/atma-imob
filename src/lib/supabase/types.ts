@@ -162,6 +162,26 @@ export type CorePerfil = {
   nome_completo: string;
   telefone: string | null;
   avatar_url: string | null;
+  created_at: string;
+  ativo: boolean;
+};
+
+export type CoreModulo = {
+  id: string;
+  nome: string;
+  slug: string;
+  ativo: boolean;
+};
+
+export type CorePermissao = {
+  id: string;
+  perfil_id: string;
+  modulo_id: string;
+  pode_visualizar: boolean;
+  pode_criar: boolean;
+  pode_editar: boolean;
+  pode_excluir: boolean;
+  permissoes_extras: string[];
   ativo: boolean;
 };
 

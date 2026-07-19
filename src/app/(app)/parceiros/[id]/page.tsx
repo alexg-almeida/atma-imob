@@ -73,9 +73,16 @@ export default async function ParceiroPage(
   const ehCaptador = parceiro.tipo === "captador" || parceiro.tipo === "ambos";
   const ehCorretor = parceiro.tipo === "corretor" || parceiro.tipo === "ambos";
 
-  const [podeEditar, podeExcluir, { data: imoveis }, { data: leads }] = await Promise.all([
+  const [
+    podeEditar,
+    podeExcluir,
+    podeExcluirDefinitivamente,
+    { data: imoveis },
+    { data: leads },
+  ] = await Promise.all([
     temPermissao("parceiros", "editar"),
     temPermissao("parceiros", "excluir"),
+    temPermissao("core", "editar"),
     ehCaptador
       ? supabase
           .from("imoveis")
@@ -142,6 +149,7 @@ export default async function ParceiroPage(
                 redirectTo="/parceiros"
                 titulo="Excluir parceiro"
                 descricao="O parceiro será removido da listagem. Essa ação não pode ser desfeita."
+                podeExcluirDefinitivamente={podeExcluirDefinitivamente}
               />
             ) : null}
           </div>

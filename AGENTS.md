@@ -32,7 +32,7 @@ Convenções obrigatórias:
 
 - Tabela principal de um módulo = nome do módulo sem prefixo (`leads`, `imoveis`, `proprietarios`, `parceiros`). Tabelas de apoio = prefixo do módulo (`leads_etapas`, `imoveis_fotos`).
 - Toda tabela tem: `id uuid default gen_random_uuid() primary key`, `created_at timestamptz default now()`, `updated_at timestamptz default now()`, `created_by uuid references auth.users`, `ativo boolean default true`.
-- **Soft delete sempre** (`ativo = false`) — nunca DELETE físico em dado de negócio.
+- **Soft delete por padrão** (`ativo = false`) — nunca DELETE físico em dado de negócio a partir de código comum. Exceção única: a ação "Excluir definitivamente" do `ExcluirRegistroButton`, visível só para quem tem acesso total ao sistema (`core`/`editar`, i.e. superadmin) e só quando o próprio usuário escolhe explicitamente essa opção na confirmação — aí sim faz `DELETE` físico de verdade.
 - **RLS habilitado em 100% das tabelas desde a criação**, sem exceção.
 - Migrations via Supabase, uma por funcionalidade, com nome descritivo.
 - **Antes de criar qualquer tabela, mostrar o DDL proposto e só aplicar a migration após confirmação explícita do usuário.**

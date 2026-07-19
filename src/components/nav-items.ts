@@ -53,5 +53,6 @@ export const adminNavItem: NavItem = {
   href: "/admin/ficha-captacao",
   children: [
     { label: "Termo da ficha de captação", href: "/admin/ficha-captacao" },
+    { label: "Usuários", href: "/admin/usuarios" },
   ],
 };

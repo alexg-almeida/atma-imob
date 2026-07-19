@@ -67,10 +67,17 @@ export default async function ProprietarioPage(
   if (!data) notFound();
   const proprietario = data as Proprietario;
 
-  const [podeEditar, podeFinanceiro, podeExcluir, { data: vinculos }] = await Promise.all([
+  const [
+    podeEditar,
+    podeFinanceiro,
+    podeExcluir,
+    podeExcluirDefinitivamente,
+    { data: vinculos },
+  ] = await Promise.all([
     temPermissao("proprietarios", "editar"),
     temPermissao("proprietarios", "financeiro"),
     temPermissao("proprietarios", "excluir"),
+    temPermissao("core", "editar"),
     supabase
       .from("imoveis_proprietarios")
       .select(
@@ -133,6 +140,7 @@ export default async function ProprietarioPage(
                 redirectTo="/proprietarios"
                 titulo="Excluir proprietário"
                 descricao="O proprietário será removido da listagem. Essa ação não pode ser desfeita."
+                podeExcluirDefinitivamente={podeExcluirDefinitivamente}
               />
             ) : null}
           </div>

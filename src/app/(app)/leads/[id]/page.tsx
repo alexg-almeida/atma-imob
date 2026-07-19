@@ -71,10 +71,17 @@ export default async function LeadPage(props: PageProps<"/leads/[id]">) {
   if (!data) notFound();
   const lead = data as unknown as LeadDetalhe;
 
-  const [podeEditar, podeRegistrar, podeExcluir, { data: interacoes }] = await Promise.all([
+  const [
+    podeEditar,
+    podeRegistrar,
+    podeExcluir,
+    podeExcluirDefinitivamente,
+    { data: interacoes },
+  ] = await Promise.all([
     temPermissao("leads", "editar"),
     temPermissao("leads", "criar"),
     temPermissao("leads", "excluir"),
+    temPermissao("core", "editar"),
     supabase
       .from("leads_interacoes")
       .select("*, usuario:core_perfis(nome_completo)")
@@ -131,6 +138,7 @@ export default async function LeadPage(props: PageProps<"/leads/[id]">) {
                 redirectTo="/leads"
                 titulo="Excluir lead"
                 descricao="O lead será removido da listagem. Essa ação não pode ser desfeita."
+                podeExcluirDefinitivamente={podeExcluirDefinitivamente}
               />
             ) : null}
           </div>
