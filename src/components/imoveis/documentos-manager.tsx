@@ -27,18 +27,10 @@ import {
 } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import { formatDate } from "@/lib/format";
-import type { ImovelDocumento } from "@/lib/supabase/types";
+import { documentoTipoLabels, documentoTipoOptions } from "@/lib/imoveis/constants";
+import type { ImovelDocumento, ImovelDocumentoTipo } from "@/lib/supabase/types";
 
 const BUCKET = "imoveis-documentos";
-
-const tiposDocumento = [
-  "Matrícula",
-  "IPTU",
-  "Contrato",
-  "Escritura",
-  "Procuração",
-  "Outros",
-];
 
 export function DocumentosManager({
   imovelId,
@@ -52,7 +44,7 @@ export function DocumentosManager({
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [documentos, setDocumentos] = useState(documentosIniciais);
-  const [tipoDocumento, setTipoDocumento] = useState("Outros");
+  const [tipoDocumento, setTipoDocumento] = useState<ImovelDocumentoTipo>("outros");
   const [uploading, setUploading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<ImovelDocumento | null>(
     null,
@@ -147,14 +139,17 @@ export function DocumentosManager({
             <span className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
               Tipo do documento
             </span>
-            <Select value={tipoDocumento} onValueChange={setTipoDocumento}>
+            <Select
+              value={tipoDocumento}
+              onValueChange={(valor) => setTipoDocumento(valor as ImovelDocumentoTipo)}
+            >
               <SelectTrigger className="w-48 rounded-none border-0 border-b border-line bg-transparent px-0 shadow-none focus-visible:ring-0">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {tiposDocumento.map((tipo) => (
-                  <SelectItem key={tipo} value={tipo}>
-                    {tipo}
+                {documentoTipoOptions.map(([valor, label]) => (
+                  <SelectItem key={valor} value={valor}>
+                    {label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -198,8 +193,10 @@ export function DocumentosManager({
                   {documento.nome_arquivo}
                 </p>
                 <p className="font-mono text-xs text-muted-foreground">
-                  {documento.tipo_documento ?? "Documento"} ·{" "}
-                  {formatDate(documento.created_at)}
+                  {documento.tipo_documento
+                    ? documentoTipoLabels[documento.tipo_documento]
+                    : "Documento"}{" "}
+                  · {formatDate(documento.created_at)}
                 </p>
               </div>
               <button

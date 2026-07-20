@@ -1,4 +1,8 @@
-import type { ImovelFinalidade, ImovelStatus } from "@/lib/supabase/types";
+import type {
+  ImovelDocumentoTipo,
+  ImovelFinalidade,
+  ImovelStatus,
+} from "@/lib/supabase/types";
 
 export const finalidadeLabels: Record<ImovelFinalidade, string> = {
   venda: "Venda",
@@ -23,8 +27,23 @@ export const statusColors: Record<ImovelStatus, string> = {
   inativo: "var(--color-strong-line)",
 };
 
+export const documentoTipoLabels: Record<ImovelDocumentoTipo, string> = {
+  matricula: "Matrícula",
+  iptu: "IPTU",
+  contrato: "Contrato",
+  escritura: "Escritura",
+  procuracao: "Procuração",
+  ficha_captacao: "Ficha de Captação",
+  outros: "Outros",
+};
+
 export const finalidadeOptions = Object.entries(finalidadeLabels) as [
   ImovelFinalidade,
+  string,
+][];
+
+export const documentoTipoOptions = Object.entries(documentoTipoLabels) as [
+  ImovelDocumentoTipo,
   string,
 ][];
 

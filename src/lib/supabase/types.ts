@@ -74,13 +74,22 @@ export type ImovelFoto = {
   ativo: boolean;
 };
 
+export type ImovelDocumentoTipo =
+  | "matricula"
+  | "iptu"
+  | "contrato"
+  | "escritura"
+  | "procuracao"
+  | "ficha_captacao"
+  | "outros";
+
 export type ImovelDocumento = {
   id: string;
   imovel_id: string;
   /** Caminho do objeto no bucket privado 'imoveis-documentos'. */
   url: string;
   nome_arquivo: string;
-  tipo_documento: string | null;
+  tipo_documento: ImovelDocumentoTipo | null;
   created_at: string;
   ativo: boolean;
 };
