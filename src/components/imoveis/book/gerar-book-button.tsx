@@ -1,25 +1,22 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { FileArrowDown } from "@phosphor-icons/react";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { BookContent, fotosDoBook } from "@/components/imoveis/book/book-content";
-import { capturarPaginasComoPdf } from "@/lib/pdf/capturar-paginas";
+import { fotosDoBook } from "@/components/imoveis/book/book-content";
+import { useBookPdf } from "@/components/imoveis/book/use-book-pdf";
+import { BOOK_BANNER_ALTURA_PX } from "@/components/imoveis/book/book-blocos";
+import { A4_PX } from "@/lib/pdf/capturar-paginas";
 import { recortarImagemCoverFit } from "@/lib/pdf/recortar-imagem";
 import type { Imovel, ImovelFoto } from "@/lib/supabase/types";
 
-// Dimensões alvo dos recortes (2x o tamanho renderizado na página A4 de
-// 794px, para nitidez na captura em scale:2 do html2canvas).
-const BANNER_PX = { width: 1588, height: 440 } as const;
+// Dimensões alvo dos recortes (2x o tamanho renderizado na página A4, para
+// nitidez na captura em scale:2 do html2canvas). O banner precisa bater
+// exatamente com `BOOK_BANNER_ALTURA_PX` — senão a foto pré-recortada numa
+// proporção sai esticada pelo html2canvas ao ser exibida numa caixa de
+// proporção diferente.
+const BANNER_PX = { width: A4_PX.width * 2, height: BOOK_BANNER_ALTURA_PX * 2 } as const;
 const GRADE_PX = { width: 800, height: 600 } as const;
 
 export function GerarBookButton({
@@ -29,10 +26,10 @@ export function GerarBookButton({
   imovel: Imovel & { tipo: { nome: string } | null };
   fotos: ImovelFoto[];
 }) {
-  const [open, setOpen] = useState(false);
   const [gerando, setGerando] = useState(false);
   const [recortes, setRecortes] = useState<Record<string, string>>({});
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { capa, fotosGrade } = fotosDoBook(fotos);
+  const { medidorNode, renderNode, gerar } = useBookPdf({ imovel, capa, fotosGrade, recortes });
 
   async function handleGerar() {
     if (fotos.length === 0) {
@@ -41,8 +38,6 @@ export function GerarBookButton({
     }
     setGerando(true);
     try {
-      const { capa, fotosGrade } = fotosDoBook(fotos);
-
       const novosRecortes: Record<string, string> = {};
       await Promise.all([
         capa
@@ -66,14 +61,10 @@ export function GerarBookButton({
         requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
       );
 
-      const paginas = Array.from(
-        containerRef.current?.querySelectorAll<HTMLElement>("[data-book-page]") ?? [],
-      );
-      const pdf = await capturarPaginasComoPdf(paginas);
+      const pdf = await gerar();
       const nomeArquivo = `book-${imovel.id.slice(0, 8)}.pdf`;
       pdf.save(nomeArquivo);
       toast.success("Book gerado.");
-      setOpen(false);
     } catch (error) {
       toast.error(
         `Falha ao gerar o book: ${error instanceof Error ? error.message : "erro desconhecido"}`,
@@ -85,38 +76,12 @@ export function GerarBookButton({
 
   return (
     <>
-      <Button type="button" variant="outline" size="sm" onClick={() => setOpen(true)}>
-        <FileArrowDown size={14} aria-hidden /> Gerar book
+      <Button type="button" variant="outline" size="sm" onClick={handleGerar} disabled={gerando}>
+        <FileArrowDown size={14} aria-hidden /> {gerando ? "Gerando…" : "Gerar book"}
       </Button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Gerar book em PDF</DialogTitle>
-            <DialogDescription>
-              Book compacto em uma página (A4 retrato) com capa, indicadores,
-              grade de fotos e descrição. Montado no seu navegador — nenhum
-              dado é enviado a um servidor nessa etapa.
-            </DialogDescription>
-          </DialogHeader>
-
-          <DialogFooter>
-            <Button type="button" size="sm" onClick={handleGerar} disabled={gerando}>
-              {gerando ? "Gerando…" : "Gerar PDF"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Componente "invisível": fora da viewport, mas totalmente renderizado
-          (não display:none) para o html2canvas conseguir capturar cada página. */}
-      <div
-        ref={containerRef}
-        aria-hidden
-        style={{ position: "fixed", top: 0, left: -10000, zIndex: -1 }}
-      >
-        <BookContent imovel={imovel} fotos={fotos} recortes={recortes} />
-      </div>
+      {medidorNode}
+      {renderNode}
     </>
   );
 }

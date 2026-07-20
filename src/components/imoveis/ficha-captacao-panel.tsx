@@ -10,14 +10,14 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { gerarFichaCaptacaoPdf } from "@/lib/pdf/ficha-captacao";
+import { useFichaPdf } from "@/components/imoveis/ficha/use-ficha-pdf";
 import { formatDate } from "@/lib/format";
 import type {
   FichaCaptacaoStatus,
   Imovel,
   ImovelFichaCaptacao,
-  Proprietario,
 } from "@/lib/supabase/types";
+import type { ProprietarioVinculo } from "@/components/imoveis/ficha/ficha-blocos";
 
 const BUCKET = "imoveis-fichas";
 
@@ -31,12 +31,6 @@ const statusColors: Record<FichaCaptacaoStatus, string> = {
   rascunho: "var(--color-strong-line)",
   gerada: "var(--color-gold)",
   enviada: "var(--color-sage)",
-};
-
-type ProprietarioVinculo = {
-  proprietario: Proprietario;
-  percentual_participacao: number | null;
-  principal: boolean;
 };
 
 export function FichaCaptacaoPanel({
@@ -63,18 +57,20 @@ export function FichaCaptacaoPanel({
   const [gerando, setGerando] = useState(false);
   const ultima = fichas[0] ?? null;
 
+  const { medidorNode, renderNode, gerar } = useFichaPdf({
+    imovel,
+    tipoNome,
+    captadorNome,
+    proprietarios,
+    termoTitulo,
+    termoCorpo,
+  });
+
   async function handleGerar() {
     setGerando(true);
     const supabase = createClient();
     try {
-      const doc = await gerarFichaCaptacaoPdf({
-        imovel,
-        tipoNome,
-        captadorNome,
-        proprietarios,
-        termoTitulo,
-        termoCorpo,
-      });
+      const doc = await gerar();
       const blob = doc.output("blob");
       const path = `${imovel.id}/${crypto.randomUUID()}.pdf`;
 
@@ -226,6 +222,9 @@ export function FichaCaptacaoPanel({
           </ul>
         </div>
       ) : null}
+
+      {medidorNode}
+      {renderNode}
     </section>
   );
 }
