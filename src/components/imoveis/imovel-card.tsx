@@ -31,20 +31,34 @@ export function ImovelCard({ imovel }: { imovel: ImovelListItem }) {
     .filter(Boolean)
     .join(" · ");
 
+  // `quartos` e `suites` são campos independentes no cadastro (quartos
+  // comuns + suítes, somando o total de dormitórios) — na carteira atual a
+  // maioria dos imóveis só tem `suites` preenchido, então olhar apenas
+  // `quartos` deixava o card sem contagem de dormitório e fazia o primeiro
+  // número visível ser o de banheiros, que se lê como quartos.
+  const dormitorios = (imovel.quartos ?? 0) + (imovel.suites ?? 0);
+
   const specs = [
-    imovel.quartos != null && imovel.quartos > 0
-      ? { icon: Bed, label: `${imovel.quartos}` }
+    dormitorios > 0
+      ? { icon: Bed, label: `${dormitorios}`, descricao: "dormitórios" }
       : null,
     imovel.banheiros != null && imovel.banheiros > 0
-      ? { icon: Bathtub, label: `${imovel.banheiros}` }
+      ? { icon: Bathtub, label: `${imovel.banheiros}`, descricao: "banheiros" }
       : null,
     imovel.vagas != null && imovel.vagas > 0
-      ? { icon: Car, label: `${imovel.vagas}` }
+      ? { icon: Car, label: `${imovel.vagas}`, descricao: "vagas" }
       : null,
-    imovel.area_interna != null
-      ? { icon: Ruler, label: `${imovel.area_interna} m²` }
+    imovel.area_interna != null && imovel.area_interna > 0
+      ? {
+          icon: Ruler,
+          label: `${imovel.area_interna} m²`,
+          descricao: "área interna",
+        }
       : null,
-  ].filter((s): s is { icon: typeof Bed; label: string } => s !== null);
+  ].filter(
+    (s): s is { icon: typeof Bed; label: string; descricao: string } =>
+      s !== null,
+  );
 
   return (
     <Link
@@ -106,10 +120,17 @@ export function ImovelCard({ imovel }: { imovel: ImovelListItem }) {
 
           <div className="mt-auto flex items-center justify-between border-t border-line pt-3">
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              {specs.map(({ icon: Icon, label }, index) => (
-                <span key={index} className="flex items-center gap-1">
+              {specs.map(({ icon: Icon, label, descricao }, index) => (
+                <span
+                  key={index}
+                  className="flex items-center gap-1"
+                  title={`${label} ${descricao}`}
+                >
                   <Icon size={14} aria-hidden />
-                  <span className="font-mono">{label}</span>
+                  <span className="font-mono">
+                    {label}
+                    <span className="sr-only"> {descricao}</span>
+                  </span>
                 </span>
               ))}
             </div>
