@@ -98,7 +98,7 @@ export default async function UsuarioPage(props: PageProps<"/admin/usuarios/[id]
             <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
               Admin
             </p>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink">
+            <h1 className="mt-1 text-3xl leading-tight font-bold tracking-[-0.02em] text-ink sm:text-4xl">
               {perfil.nome_completo}
             </h1>
             {ehVoceMesmo ? (

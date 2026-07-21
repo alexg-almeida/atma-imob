@@ -132,7 +132,7 @@ export default async function FichaCaptacaoPage(
         <p className="mt-4 text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
           {finalidadeLabels[imovel.finalidade]}
         </p>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink">
+        <h1 className="mt-1 text-3xl leading-tight font-bold tracking-[-0.02em] text-ink sm:text-4xl">
           Ficha de captação · {tituloImovel}
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">

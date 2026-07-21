@@ -155,11 +155,12 @@ function BlocoHeader({
 
 /** Faixa de indicadores da referência: caixas com bordas finas, rótulo mono pequeno + valor em destaque. */
 function BlocoIndicadores({ imovel }: { imovel: Imovel }) {
+  const dormitorios = (imovel.quartos ?? 0) + (imovel.suites ?? 0);
   const itens: { label: string; value: string }[] = [
     ...(imovel.area_interna != null
       ? [{ label: "Área útil", value: `${imovel.area_interna} m²` }]
       : []),
-    ...(imovel.quartos != null ? [{ label: "Quartos", value: String(imovel.quartos) }] : []),
+    ...(dormitorios > 0 ? [{ label: "Dormitórios", value: String(dormitorios) }] : []),
     ...(imovel.suites != null ? [{ label: "Suítes", value: String(imovel.suites) }] : []),
     ...(imovel.banheiros != null
       ? [{ label: "Banheiros", value: String(imovel.banheiros) }]
@@ -170,15 +171,20 @@ function BlocoIndicadores({ imovel }: { imovel: Imovel }) {
       : []),
   ];
   if (itens.length === 0) return null;
+  const colunas = Math.min(itens.length, 3);
   return (
     <dl
       className="grid border border-line"
-      style={{ gridTemplateColumns: `repeat(${itens.length}, minmax(0, 1fr))` }}
+      style={{ gridTemplateColumns: `repeat(${colunas}, minmax(0, 1fr))` }}
     >
       {itens.map((item, index) => (
         <div
           key={item.label}
-          className={`px-4 py-3 ${index > 0 ? "border-l border-line" : ""}`}
+          className="px-4 py-3"
+          style={{
+            borderLeft: index % colunas === 0 ? undefined : "1px solid var(--color-line)",
+            borderTop: index >= colunas ? "1px solid var(--color-line)" : undefined,
+          }}
         >
           <dt className="font-mono text-[9px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
             {item.label}
@@ -201,7 +207,7 @@ function BlocoSobreTitulo({ texto }: { texto: string }) {
   );
 }
 
-function FotoGrid({
+function FotoLinha({
   fotos,
   recortes,
 }: {
@@ -209,7 +215,10 @@ function FotoGrid({
   recortes: Record<string, string>;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div
+      className="grid gap-4"
+      style={{ gridTemplateColumns: `repeat(${fotos.length}, minmax(0, 1fr))` }}
+    >
       {fotos.map((foto) => (
         <div key={foto.id} className="aspect-[4/3] w-full overflow-hidden rounded-sm bg-surface">
           {/* eslint-disable-next-line @next/next/no-img-element -- captura via html2canvas */}
@@ -226,17 +235,42 @@ function FotoGrid({
 }
 
 function BlocoFotos({
-  fotosGrade,
+  fotos,
   recortes,
+  mostrarTitulo,
 }: {
-  fotosGrade: ImovelFoto[];
+  fotos: ImovelFoto[];
   recortes: Record<string, string>;
+  mostrarTitulo: boolean;
 }) {
   return (
     <div>
-      <TituloSecao>Fotos</TituloSecao>
-      <div className="mt-3">
-        <FotoGrid fotos={fotosGrade} recortes={recortes} />
+      {mostrarTitulo ? <TituloSecao>Fotos</TituloSecao> : null}
+      <div className={mostrarTitulo ? "mt-3" : ""}>
+        <FotoLinha fotos={fotos} recortes={recortes} />
+      </div>
+    </div>
+  );
+}
+
+function BlocoContato() {
+  return (
+    <div className="border-y border-line bg-surface px-6 py-5">
+      <p className="font-mono text-[10px] font-semibold tracking-[0.2em] text-primary uppercase">
+        Próximo passo
+      </p>
+      <div className="mt-2 flex items-end justify-between gap-8">
+        <div>
+          <p className="text-lg font-semibold tracking-tight text-ink">
+            Agende uma visita com a equipe Atma.
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Atendimento consultivo para encontrar o imóvel certo para você.
+          </p>
+        </div>
+        <p className="shrink-0 text-xs font-semibold tracking-[0.12em] text-ink uppercase">
+          Atma Consultoria Imobiliária
+        </p>
       </div>
     </div>
   );
@@ -295,12 +329,27 @@ export function montarBlocosDoBook(dados: BookDados): BlocoDescriptor[] {
   }
 
   if (fotosGrade.length > 0) {
-    blocos.push({ id: "fotos", node: <BlocoFotos fotosGrade={fotosGrade} recortes={recortes} /> });
+    for (let inicio = 0; inicio < fotosGrade.length; inicio += 2) {
+      const indice = inicio / 2;
+      blocos.push({
+        id: `fotos-${indice}`,
+        node: (
+          <BlocoFotos
+            fotos={fotosGrade.slice(inicio, inicio + 2)}
+            recortes={recortes}
+            mostrarTitulo={indice === 0}
+          />
+        ),
+      });
+    }
   }
 
   if (imovel.diferenciais.length > 0) {
     blocos.push({ id: "diferenciais", node: <BlocoDiferenciais itens={imovel.diferenciais} /> });
   }
+
+
+  blocos.push({ id: "contato", node: <BlocoContato /> });
 
   return blocos;
 }

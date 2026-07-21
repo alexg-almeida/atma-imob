@@ -2,7 +2,7 @@ import { A4Page } from "@/components/imoveis/book/a4-page";
 import type { BlocoDescriptor } from "./ficha-blocos";
 
 /** Espaçamento vertical entre blocos consecutivos — usado aqui e no orçamento de altura do empacotador (`use-ficha-pdf.ts`). */
-export const FICHA_GAP_BLOCOS_PX = 24;
+export const FICHA_GAP_BLOCOS_PX = 18;
 
 /**
  * Extraído à parte para poder ser medido isoladamente na passada de

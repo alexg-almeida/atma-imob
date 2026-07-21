@@ -2,7 +2,7 @@ import { A4Page } from "@/components/imoveis/book/a4-page";
 import type { BlocoDescriptor } from "@/lib/pdf/blocos";
 
 /** Espaçamento vertical entre blocos consecutivos — usado aqui e no orçamento de altura do empacotador (`use-book-pdf.ts`). */
-export const BOOK_GAP_BLOCOS_PX = 24;
+export const BOOK_GAP_BLOCOS_PX = 20;
 /** Distância do topo da área de conteúdo até o primeiro bloco — sempre a mesma, seja logo abaixo do banner (página 1) ou no topo da página (páginas seguintes, sem banner). */
 export const BOOK_PADDING_TOPO_PX = 40;
 /** Distância do fim do conteúdo até a borda inferior da página. */

@@ -4,15 +4,15 @@ import { FiltroValorInput } from "@/components/imoveis/filtro-valor-input";
 import type { ImovelTipo } from "@/lib/supabase/types";
 
 const selectBase =
-  "cursor-pointer border-0 border-b border-line bg-transparent pb-2 text-sm text-ink outline-none transition-colors duration-150 focus:border-primary";
+  "min-h-10 w-full cursor-pointer border-0 border-b border-line bg-transparent py-2 text-sm text-ink outline-none transition-colors duration-150 focus:border-primary";
 
 const inputBase =
-  "border-0 border-b border-line bg-transparent pb-2 text-sm text-ink outline-none transition-colors duration-150 placeholder:text-muted-foreground focus:border-primary";
+  "min-h-10 w-full border-0 border-b border-line bg-transparent py-2 text-sm text-ink outline-none transition-colors duration-150 placeholder:text-muted-foreground focus:border-primary";
 
 /** Mesmo visual de `inputBase`, mas para o componente shadcn Input (que traz
  * borda/raio/padding próprios que precisam ser zerados). */
 const currencyInputBase =
-  "h-auto rounded-none border-0 border-b border-line bg-transparent px-0 py-0 pb-2 text-sm text-ink shadow-none outline-none transition-colors duration-150 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-0";
+  "min-h-10 rounded-none border-0 border-b border-line bg-transparent px-0 py-2 text-sm text-ink shadow-none outline-none transition-colors duration-150 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-0";
 
 const labelBase =
   "text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase";
@@ -41,11 +41,20 @@ export function ImoveisFiltros({
     <form
       method="get"
       action="/imoveis"
-      className="border-b border-line pb-6"
+      className="border-t border-line py-6"
       aria-label="Filtros de imóveis"
     >
-      <div className="flex flex-nowrap items-end gap-x-6 overflow-x-auto pb-2 [scrollbar-width:thin]">
-        <label className="flex w-32 shrink-0 flex-col gap-2">
+      <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3">
+        <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+          Refinar carteira
+        </p>
+        <p className="font-mono text-xs text-muted-foreground">
+          {total} {total === 1 ? "imóvel encontrado" : "imóveis encontrados"}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 items-end gap-x-5 gap-y-5 sm:grid-cols-3 lg:grid-cols-6">
+        <label className="flex min-w-0 flex-col gap-1.5">
           <span className={labelBase}>Finalidade</span>
           <select
             name="finalidade"
@@ -61,7 +70,7 @@ export function ImoveisFiltros({
           </select>
         </label>
 
-        <label className="flex w-28 shrink-0 flex-col gap-2">
+        <label className="flex min-w-0 flex-col gap-1.5">
           <span className={labelBase}>Status</span>
           <select
             name="status"
@@ -77,7 +86,7 @@ export function ImoveisFiltros({
           </select>
         </label>
 
-        <label className="flex w-32 shrink-0 flex-col gap-2">
+        <label className="flex min-w-0 flex-col gap-1.5">
           <span className={labelBase}>Tipo</span>
           <select
             name="tipo"
@@ -93,7 +102,7 @@ export function ImoveisFiltros({
           </select>
         </label>
 
-        <label className="flex w-28 shrink-0 flex-col gap-2">
+        <label className="flex min-w-0 flex-col gap-1.5">
           <span className={labelBase}>Cidade</span>
           <input
             type="text"
@@ -104,7 +113,7 @@ export function ImoveisFiltros({
           />
         </label>
 
-        <label className="flex w-24 shrink-0 flex-col gap-2">
+        <label className="flex min-w-0 flex-col gap-1.5">
           <span className={labelBase}>Valor de</span>
           <FiltroValorInput
             name="valor_min"
@@ -114,7 +123,7 @@ export function ImoveisFiltros({
           />
         </label>
 
-        <label className="flex w-28 shrink-0 flex-col gap-2">
+        <label className="flex min-w-0 flex-col gap-1.5">
           <span className={labelBase}>Valor até</span>
           <FiltroValorInput
             name="valor_max"
@@ -124,10 +133,10 @@ export function ImoveisFiltros({
           />
         </label>
 
-        <div className="flex shrink-0 items-center gap-4">
+        <div className="col-span-2 flex min-h-11 items-center gap-5 sm:col-span-3 lg:col-span-6">
           <button
             type="submit"
-            className="rounded-sm bg-primary px-4 py-2.5 text-[12px] font-semibold tracking-[0.12em] text-white uppercase transition-colors duration-150 ease-out hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            className="min-h-11 rounded-sm bg-primary px-5 text-[12px] font-semibold tracking-[0.12em] text-white uppercase transition-colors duration-150 ease-out hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             Filtrar
           </button>
@@ -142,9 +151,6 @@ export function ImoveisFiltros({
         </div>
       </div>
 
-      <p className="mt-4 font-mono text-xs text-muted-foreground">
-        {total} {total === 1 ? "imóvel encontrado" : "imóveis encontrados"}
-      </p>
     </form>
   );
 }

@@ -111,9 +111,12 @@ export default async function ImoveisPage(props: PageProps<"/imoveis">) {
 
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-4 pt-8 pb-6">
+      <div className="flex flex-wrap items-end justify-between gap-5 pt-10 pb-7">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">
+          <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+            Carteira administrada
+          </p>
+          <h1 className="mt-1 text-3xl leading-tight font-bold tracking-[-0.02em] text-ink sm:text-4xl">
             Imóveis
           </h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
@@ -151,7 +154,7 @@ export default async function ImoveisPage(props: PageProps<"/imoveis">) {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-6 pt-8 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="divide-y divide-line border-y border-line">
         {(imoveis as ImovelListItem[] | null)?.map((imovel) => (
           <ImovelCard key={imovel.id} imovel={imovel} />
         ))}

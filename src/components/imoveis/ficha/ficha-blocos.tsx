@@ -1,5 +1,5 @@
 import { finalidadeLabels, statusLabels } from "@/lib/imoveis/constants";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatAtmaToday, formatCurrency, formatDate } from "@/lib/format";
 import {
   substituirVariaveis,
   TERMO_CORPO_PADRAO,
@@ -21,6 +21,7 @@ export type FichaDados = {
   tipoNome: string;
   captadorNome: string | null;
   proprietarios: ProprietarioVinculo[];
+  numeroFicha: string;
   termoTitulo?: string | null;
   termoCorpo?: string | null;
 };
@@ -74,23 +75,32 @@ function SecaoTitulo({ numero, titulo }: { numero: string; titulo: string }) {
 
 // ---- Blocos ----
 
-function BlocoCabecalho({ imovel, tipoNome }: { imovel: Imovel; tipoNome: string }) {
+function BlocoCabecalho({
+  imovel,
+  tipoNome,
+  numeroFicha,
+}: {
+  imovel: Imovel;
+  tipoNome: string;
+  numeroFicha: string;
+}) {
   return (
     <div>
-      <div className="flex items-end justify-between border-b-2 border-ink pb-4">
+      <div className="flex items-center justify-between border-b-2 border-ink pb-4">
         {/* eslint-disable-next-line @next/next/no-img-element -- captura via html2canvas */}
         <img src="/brand/atma-logo.png" alt="" crossOrigin="anonymous" className="h-9 w-auto" />
-        <div className="text-right">
+        <div className="border-l border-line pl-6 text-right">
           <p className="text-base font-bold tracking-tight text-ink uppercase">
             Ficha de Captação
           </p>
-          <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
-            Nº ________ · Data ___/___/______
-          </p>
+          <div className="mt-2 flex items-center justify-end gap-4 font-mono text-[10px]">
+            <span className="font-semibold text-ink">Nº {numeroFicha}</span>
+            <span className="text-muted-foreground">{formatAtmaToday()}</span>
+          </div>
         </div>
       </div>
       <p className="mt-2 text-[10px] text-muted-foreground">
-        Gerada em {formatDate(new Date().toISOString())} · {tipoNome} ·{" "}
+        Gerada em {formatAtmaToday(true)} · {tipoNome} ·{" "}
         {finalidadeLabels[imovel.finalidade]}
       </p>
     </div>
@@ -381,7 +391,7 @@ function BlocoAssinaturas({ local, hoje }: { local: string; hoje: string }) {
  * final (`use-ficha-pdf.ts`), garantindo que as duas nunca divirjam.
  */
 export function montarBlocosDaFicha(dados: FichaDados): BlocoDescriptor[] {
-  const { imovel, tipoNome, captadorNome, proprietarios } = dados;
+  const { imovel, tipoNome, captadorNome, proprietarios, numeroFicha } = dados;
   const termoTitulo = dados.termoTitulo || TERMO_TITULO_PADRAO;
   const termoCorpo = dados.termoCorpo || TERMO_CORPO_PADRAO;
 
@@ -390,22 +400,12 @@ export function montarBlocosDaFicha(dados: FichaDados): BlocoDescriptor[] {
 
   const blocos: BlocoDescriptor[] = [];
 
-  blocos.push({ id: "cabecalho", node: <BlocoCabecalho imovel={imovel} tipoNome={tipoNome} /> });
   blocos.push({
-    id: "identificacao-areas",
-    node: <BlocoIdentificacaoAreas imovel={imovel} captadorNome={captadorNome} />,
+    id: "cabecalho",
+    node: (
+      <BlocoCabecalho imovel={imovel} tipoNome={tipoNome} numeroFicha={numeroFicha} />
+    ),
   });
-  blocos.push({ id: "valores", node: <BlocoValores imovel={imovel} /> });
-
-  const temCaracteristicas = [
-    imovel.comodidades_internas,
-    imovel.instalacoes,
-    imovel.lazer,
-    imovel.diferenciais,
-  ].some((l) => l.length > 0);
-  if (temCaracteristicas) {
-    blocos.push({ id: "caracteristicas", node: <BlocoCaracteristicas imovel={imovel} /> });
-  }
 
   if (principal) {
     blocos.push({
@@ -425,6 +425,22 @@ export function montarBlocosDaFicha(dados: FichaDados): BlocoDescriptor[] {
         node: <LinhaCoProprietario vinculo={vinculo} />,
       });
     });
+  }
+
+  blocos.push({
+    id: "identificacao-areas",
+    node: <BlocoIdentificacaoAreas imovel={imovel} captadorNome={captadorNome} />,
+  });
+  blocos.push({ id: "valores", node: <BlocoValores imovel={imovel} /> });
+
+  const temCaracteristicas = [
+    imovel.comodidades_internas,
+    imovel.instalacoes,
+    imovel.lazer,
+    imovel.diferenciais,
+  ].some((l) => l.length > 0);
+  if (temCaracteristicas) {
+    blocos.push({ id: "caracteristicas", node: <BlocoCaracteristicas imovel={imovel} /> });
   }
 
   if (imovel.observacoes) {
@@ -454,6 +470,8 @@ export function montarBlocosDaFicha(dados: FichaDados): BlocoDescriptor[] {
     `${tipoNome} para ${finalidadeLabels[imovel.finalidade].toLowerCase()}${
       imovel.cidade ? ` em ${imovel.cidade}` : ""
     }`;
+  const registroInstitucional =
+    process.env.NEXT_PUBLIC_ATMA_CRECI_CNPJ?.trim() || "Não informado";
   const variaveis: Record<string, string> = {
     proprietario_nome: principal?.proprietario.nome_completo ?? "",
     proprietario_cpf: principal?.proprietario.cpf ?? "",
@@ -466,7 +484,7 @@ export function montarBlocosDaFicha(dados: FichaDados): BlocoDescriptor[] {
     comissao_percentual:
       imovel.comissao_percentual != null ? String(imovel.comissao_percentual) : "______",
     local: "Ribeirão Preto",
-    hoje: new Date().toLocaleDateString("pt-BR"),
+    hoje: formatAtmaToday(),
   };
 
   blocos.push({
@@ -509,7 +527,7 @@ export function montarBlocosDaFicha(dados: FichaDados): BlocoDescriptor[] {
         titulo="Corretor/Imobiliária"
         campos={[
           { label: "Nome/Razão Social", valor: "Atma Consultoria Imobiliária" },
-          { label: "CRECI/CNPJ", valor: "—" },
+          { label: "CRECI/CNPJ", valor: registroInstitucional },
         ]}
       />
     ),

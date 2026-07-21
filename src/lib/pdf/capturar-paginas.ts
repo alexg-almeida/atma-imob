@@ -5,6 +5,23 @@ import { jsPDF } from "jspdf";
 export const A4_PX = { width: 794, height: 1123 } as const;
 const A4_MM = { width: 210, height: 297 } as const;
 
+type PdfMetadata = {
+  title: string;
+  subject: string;
+};
+
+export async function aguardarFontes(): Promise<void> {
+  if ("fonts" in document) await document.fonts.ready;
+}
+
+export function validarPaginasSemOverflow(paginas: HTMLElement[]): void {
+  paginas.forEach((pagina, index) => {
+    if (pagina.scrollHeight > pagina.clientHeight + 1) {
+      throw new Error(`O conteúdo excedeu o limite da página ${index + 1}.`);
+    }
+  });
+}
+
 /**
  * Espera todas as <img> dentro do container terminarem de carregar (ou falharem),
  * necessário antes de capturar com html2canvas — imagens ainda carregando saem
@@ -33,8 +50,17 @@ export async function aguardarImagens(container: HTMLElement): Promise<void> {
  */
 export async function capturarPaginasComoPdf(
   paginas: HTMLElement[],
+  metadata?: PdfMetadata,
 ): Promise<jsPDF> {
   const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+
+  if (metadata) {
+    doc.setProperties({
+      ...metadata,
+      author: "Atma Consultoria Imobiliária",
+      creator: "Atma CRM",
+    });
+  }
 
   for (let i = 0; i < paginas.length; i++) {
     const pagina = paginas[i];

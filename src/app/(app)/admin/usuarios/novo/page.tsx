@@ -65,7 +65,7 @@ export default async function NovoUsuarioPage() {
         >
           ← Usuários
         </Link>
-        <h1 className="mt-4 text-2xl font-bold tracking-tight text-ink">
+        <h1 className="mt-4 text-3xl leading-tight font-bold tracking-[-0.02em] text-ink sm:text-4xl">
           Novo usuário
         </h1>
       </div>

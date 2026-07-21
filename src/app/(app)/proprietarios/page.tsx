@@ -55,7 +55,7 @@ export default async function ProprietariosPage(
     <>
       <div className="flex flex-wrap items-end justify-between gap-4 pt-8 pb-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">
+          <h1 className="text-3xl leading-tight font-bold tracking-[-0.02em] text-ink sm:text-4xl">
             Proprietários
           </h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">

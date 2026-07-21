@@ -10,8 +10,26 @@ const dateFormat = new Intl.DateTimeFormat("pt-BR", {
   year: "numeric",
 });
 
+const atmaDateFormat = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  timeZone: "America/Campo_Grande",
+});
+
+const atmaLongDateFormat = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+  timeZone: "America/Campo_Grande",
+});
+
 export function formatDate(isoDate: string) {
   return dateFormat.format(new Date(`${isoDate.slice(0, 10)}T12:00:00`));
+}
+
+export function formatAtmaToday(long = false) {
+  return (long ? atmaLongDateFormat : atmaDateFormat).format(new Date());
 }
 
 export function formatCurrency(value: number | null | undefined) {

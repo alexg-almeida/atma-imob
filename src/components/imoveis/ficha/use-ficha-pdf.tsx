@@ -2,7 +2,13 @@
 
 import { useRef, useState } from "react";
 import type { jsPDF } from "jspdf";
-import { A4_PX, aguardarImagens, capturarPaginasComoPdf } from "@/lib/pdf/capturar-paginas";
+import {
+  A4_PX,
+  aguardarFontes,
+  aguardarImagens,
+  capturarPaginasComoPdf,
+  validarPaginasSemOverflow,
+} from "@/lib/pdf/capturar-paginas";
 import { dividirBlocoTexto, empacotarBlocos, medirAlturasDeBlocos } from "@/lib/pdf/blocos";
 import { TERMO_CORPO_PADRAO } from "@/lib/pdf/ficha-captacao";
 import {
@@ -15,6 +21,7 @@ import type { FichaDados } from "@/components/imoveis/ficha/ficha-blocos";
 
 const PADDING_VERTICAL_PAGINA_PX = 56 * 2; // A4Page com padded (p-14)
 const ALTURA_RODAPE_FALLBACK_PX = 40;
+const MARGEM_SEGURANCA_PX = 16;
 
 function proximoFrame(): Promise<void> {
   return new Promise((resolve) =>
@@ -82,6 +89,7 @@ export function useFichaPdf(dados: FichaDados) {
   const [dadosAjustados, setDadosAjustados] = useState<FichaDados>(dados);
 
   async function gerar(): Promise<jsPDF> {
+    await aguardarFontes();
     if (dadosAjustados !== dados) {
       setDadosAjustados(dados);
       await proximoFrame();
@@ -94,7 +102,8 @@ export function useFichaPdf(dados: FichaDados) {
     const alturaRodape =
       medidor.querySelector<HTMLElement>("[data-rodape-medidor]")?.getBoundingClientRect()
         .height || ALTURA_RODAPE_FALLBACK_PX;
-    const alturaUtil = A4_PX.height - PADDING_VERTICAL_PAGINA_PX - alturaRodape;
+    const alturaUtil =
+      A4_PX.height - PADDING_VERTICAL_PAGINA_PX - alturaRodape - MARGEM_SEGURANCA_PX;
 
     // Passo 1: nenhum parágrafo de observações/cláusula do termo pode,
     // sozinho, exceder o orçamento de uma página inteira (caso patológico
@@ -140,7 +149,12 @@ export function useFichaPdf(dados: FichaDados) {
     );
     await Promise.all(paginasEl.map((el) => aguardarImagens(el)));
 
-    return capturarPaginasComoPdf(paginasEl);
+    validarPaginasSemOverflow(paginasEl);
+
+    return capturarPaginasComoPdf(paginasEl, {
+      title: `Ficha de captação · ${dados.tipoNome}`,
+      subject: "Ficha de captação e termo de autorização de intermediação imobiliária",
+    });
   }
 
   const medidorNode = (

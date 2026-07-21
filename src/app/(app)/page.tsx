@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowRight, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
 import { KpiStrip, type Kpi } from "@/components/kpi-strip";
 import { LeadsLineChart, type LeadsPorMes } from "@/components/charts/leads-line-chart";
@@ -29,6 +31,16 @@ type ImovelRecente = {
   proprietarios: { principal: boolean; proprietario: { nome_completo: string } | null }[];
 };
 
+type ImovelResumo = {
+  status: ImovelStatus;
+  finalidade: "venda" | "locacao" | "ambos";
+  tipo_id: string | null;
+  endereco_completo: string | null;
+  cidade: string | null;
+  valor_venda: number | null;
+  valor_locacao: number | null;
+};
+
 type LeadLinha = {
   id: string;
   nome_completo: string;
@@ -45,7 +57,10 @@ export default async function Home() {
     { data: imoveisRecentesData },
     { data: leadsRecentesData },
   ] = await Promise.all([
-    supabase.from("imoveis").select("status").eq("ativo", true),
+    supabase
+      .from("imoveis")
+      .select("status, finalidade, tipo_id, endereco_completo, cidade, valor_venda, valor_locacao")
+      .eq("ativo", true),
     supabase
       .from("leads")
       .select("id, created_at, etapa:leads_etapas(nome)")
@@ -66,7 +81,8 @@ export default async function Home() {
       .limit(6),
   ]);
 
-  const statusList = (imoveisStatus ?? []).map((i) => i.status as ImovelStatus);
+  const imoveisResumo = (imoveisStatus ?? []) as ImovelResumo[];
+  const statusList = imoveisResumo.map((imovel) => imovel.status);
   const totalImoveis = statusList.length;
   const imoveisAtivos = statusList.filter((s) => s === "ativo").length;
   const imoveisReservados = statusList.filter((s) => s === "reservado").length;
@@ -91,26 +107,52 @@ export default async function Home() {
     (l) => new Date(l.created_at) >= inicioMes,
   ).length;
 
+  const imoveisIncompletos = imoveisResumo.filter((imovel) => {
+    const semValorVenda =
+      imovel.finalidade !== "locacao" && imovel.valor_venda == null;
+    const semValorLocacao =
+      imovel.finalidade !== "venda" && imovel.valor_locacao == null;
+    return (
+      !imovel.tipo_id ||
+      !imovel.endereco_completo ||
+      !imovel.cidade ||
+      semValorVenda ||
+      semValorLocacao
+    );
+  }).length;
+
+  const seteDiasAtras = new Date();
+  seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
+  const leadsAntigosEmAberto = leadsList.filter(
+    (lead) =>
+      !["fechado", "perdido"].includes((lead.etapa?.nome ?? "").toLowerCase()) &&
+      new Date(lead.created_at) < seteDiasAtras,
+  ).length;
+
   const kpis: Kpi[] = [
     {
       label: "Imóveis ativos",
       value: String(imoveisAtivos),
       subtitle: `${totalImoveis} imóveis na carteira`,
+      href: "/imoveis?status=ativo",
     },
     {
       label: "Imóveis reservados",
       value: String(imoveisReservados),
       subtitle: "Aguardando fechamento",
+      href: "/imoveis?status=reservado",
     },
     {
       label: "Leads em aberto",
       value: String(leadsAbertos),
       subtitle: `${leadsList.length} leads no total`,
+      href: "/leads",
     },
     {
       label: "Leads novos no mês",
       value: String(leadsNovosMes),
       subtitle: "Desde o dia 1º",
+      href: "/leads",
     },
   ];
 
@@ -154,9 +196,12 @@ export default async function Home() {
 
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-4 pt-8 pb-6">
+      <div className="flex flex-wrap items-end justify-between gap-4 pt-10 pb-7">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">
+          <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+            Operação Atma
+          </p>
+          <h1 className="mt-1 text-3xl leading-tight font-bold tracking-[-0.02em] text-ink sm:text-4xl">
             Painel geral
           </h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
@@ -170,6 +215,40 @@ export default async function Home() {
       </div>
 
       <KpiStrip items={kpis} />
+
+      <section aria-labelledby="atencao-heading" className="border-b border-line py-8">
+        <div className="flex items-center gap-2">
+          <WarningCircle size={18} className="text-gold" weight="fill" aria-hidden />
+          <h2
+            id="atencao-heading"
+            className="text-sm font-semibold tracking-[0.12em] text-ink uppercase"
+          >
+            Atenção hoje
+          </h2>
+        </div>
+        <div className="mt-4 grid gap-x-12 lg:grid-cols-2">
+          <Link
+            href="/imoveis"
+            className="group flex min-h-12 items-center justify-between gap-4 border-t border-line py-3 text-sm text-ink"
+          >
+            <span>Cadastros de imóveis com informações essenciais pendentes</span>
+            <span className="flex shrink-0 items-center gap-3 font-mono">
+              {imoveisIncompletos}
+              <ArrowRight size={15} className="text-strong-line group-hover:text-primary" aria-hidden />
+            </span>
+          </Link>
+          <Link
+            href="/leads"
+            className="group flex min-h-12 items-center justify-between gap-4 border-t border-line py-3 text-sm text-ink"
+          >
+            <span>Leads em aberto cadastrados há mais de 7 dias</span>
+            <span className="flex shrink-0 items-center gap-3 font-mono">
+              {leadsAntigosEmAberto}
+              <ArrowRight size={15} className="text-strong-line group-hover:text-primary" aria-hidden />
+            </span>
+          </Link>
+        </div>
+      </section>
 
       <div className="grid grid-cols-1 gap-12 pt-12 pb-14 lg:grid-cols-12">
         <section aria-labelledby="leads-heading" className="lg:col-span-7">

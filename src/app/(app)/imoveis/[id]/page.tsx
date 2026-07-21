@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PencilSimple } from "@phosphor-icons/react/dist/ssr";
+import { FileText, PencilSimple, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
 import { temPermissao } from "@/lib/permissoes";
 import { ImovelStatusDot } from "@/components/imoveis/imovel-status";
@@ -41,16 +41,14 @@ function ChipsGroup({ titulo, itens }: { titulo: string; itens: string[] }) {
       <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
         {titulo}
       </p>
-      <div className="mt-2 flex flex-wrap gap-1.5">
+      <ul className="mt-3 grid gap-x-8 gap-y-2 sm:grid-cols-2">
         {itens.map((item) => (
-          <span
-            key={item}
-            className="rounded-sm bg-surface px-2 py-1 text-xs text-ink"
-          >
-            {item}
-          </span>
+          <li key={item} className="flex items-start gap-2 text-sm text-ink">
+            <span className="mt-[0.55em] h-1 w-1 shrink-0 rounded-full bg-strong-line" aria-hidden />
+            <span>{item}</span>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }
@@ -104,20 +102,32 @@ export default async function ImovelPage(props: PageProps<"/imoveis/[id]">) {
   ]);
 
   const galeria = (fotos ?? []) as ImovelFoto[];
+  const proprietariosVinculados = (vinculos ?? []) as unknown as VinculoComProprietario[];
 
   const titulo = [imovel.tipo?.nome ?? "Imóvel", imovel.cidade]
     .filter(Boolean)
     .join(" · ");
 
-  const facts: { label: string; value: string }[] = [
+  const pendencias = [
+    !imovel.tipo_id ? "tipo" : null,
+    !imovel.endereco_completo ? "endereço" : null,
+    !imovel.cidade ? "cidade" : null,
+    imovel.finalidade !== "locacao" && imovel.valor_venda == null ? "valor de venda" : null,
+    imovel.finalidade !== "venda" && imovel.valor_locacao == null ? "valor de locação" : null,
+    proprietariosVinculados.length === 0 ? "proprietário" : null,
+    galeria.length === 0 ? "fotografias" : null,
+  ].filter((item): item is string => item !== null);
+
+  const facts: { label: string; value: string; destaque?: boolean }[] = [
     ...(imovel.finalidade !== "locacao"
-      ? [{ label: "Valor de venda", value: formatCurrency(imovel.valor_venda) }]
+      ? [{ label: "Valor de venda", value: formatCurrency(imovel.valor_venda), destaque: true }]
       : []),
     ...(imovel.finalidade !== "venda"
       ? [
           {
             label: "Aluguel mensal",
             value: formatCurrency(imovel.valor_locacao),
+            destaque: true,
           },
         ]
       : []),
@@ -168,19 +178,25 @@ export default async function ImovelPage(props: PageProps<"/imoveis/[id]">) {
 
   return (
     <>
-      <div className="pt-8 pb-5">
+      <div className="pt-9 pb-6">
         <Link
           href="/imoveis"
           className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase transition-colors duration-150 hover:text-ink"
         >
           ← Imóveis
         </Link>
-        <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+        <div className="mt-4 flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
-              {finalidadeLabels[imovel.finalidade]}
-            </p>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+                {finalidadeLabels[imovel.finalidade]}
+              </p>
+              <ImovelStatusDot status={imovel.status} />
+              <span className="font-mono text-[10px] tracking-[0.08em] text-muted-foreground uppercase">
+                Ref. {imovel.id.slice(0, 8)}
+              </span>
+            </div>
+            <h1 className="mt-2 text-3xl leading-tight font-bold tracking-[-0.02em] text-ink sm:text-4xl">
               {titulo}
             </h1>
             {imovel.frase_destaque ? (
@@ -189,16 +205,24 @@ export default async function ImovelPage(props: PageProps<"/imoveis/[id]">) {
               </p>
             ) : null}
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <ImovelStatusDot status={imovel.status} />
-            <GerarBookButton imovel={imovel} fotos={galeria} />
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <p className="mb-2 text-[10px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+                Documentos
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <GerarBookButton imovel={imovel} fotos={galeria} />
+                {podeEditar ? (
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/imoveis/${id}/ficha-captacao`}>
+                      <FileText size={14} aria-hidden /> Ficha de captação
+                    </Link>
+                  </Button>
+                ) : null}
+              </div>
+            </div>
             {podeEditar ? (
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/imoveis/${id}/ficha-captacao`}>Ficha de captação</Link>
-              </Button>
-            ) : null}
-            {podeEditar ? (
-              <Button size="sm" asChild>
+              <Button size="sm" className="min-h-11" asChild>
                 <Link href={`/imoveis/${id}/editar`}>
                   <PencilSimple size={14} aria-hidden /> Editar
                 </Link>
@@ -218,21 +242,44 @@ export default async function ImovelPage(props: PageProps<"/imoveis/[id]">) {
         </div>
       </div>
 
+      {podeEditar && pendencias.length > 0 ? (
+        <div className="mb-6 flex flex-col gap-3 border-y border-gold/70 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="flex items-start gap-2 text-sm text-ink">
+            <WarningCircle size={18} className="mt-0.5 shrink-0 text-gold" weight="fill" aria-hidden />
+            <span>
+              Cadastro incompleto: faltam {pendencias.join(", ")}.
+            </span>
+          </p>
+          <Link
+            href={`/imoveis/${id}/editar`}
+            className="shrink-0 text-[11px] font-semibold tracking-[0.12em] text-primary uppercase hover:text-primary-hover"
+          >
+            Completar cadastro →
+          </Link>
+        </div>
+      ) : null}
+
       {/* Galeria */}
       <GaleriaImovel fotos={galeria} titulo={titulo} />
 
       {/* Fatos principais */}
       {facts.length > 0 ? (
-        <dl className="mt-10 grid grid-cols-2 gap-y-8 border-y border-line py-8 sm:grid-cols-3 lg:flex lg:justify-between">
+        <dl className="mt-10 grid grid-cols-2 border-y border-line sm:grid-cols-3 lg:flex">
           {facts.map((fact) => (
             <div
               key={fact.label}
-              className="px-4 first:pl-0 last:pr-0 lg:border-l lg:border-line lg:first:border-0"
+              className={`min-w-0 border-line px-4 py-6 odd:border-r sm:border-r sm:last:border-r-0 lg:px-5 ${
+                fact.destaque ? "lg:flex-[1.45_1_0%]" : "lg:flex-[1_1_0%]"
+              }`}
             >
               <dt className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
                 {fact.label}
               </dt>
-              <dd className="mt-2 font-mono text-2xl font-medium text-ink">
+              <dd
+                className={`mt-2 font-mono font-medium text-ink ${
+                  fact.destaque ? "text-xl whitespace-nowrap xl:text-2xl" : "text-2xl"
+                }`}
+              >
                 {fact.value}
               </dd>
             </div>
@@ -337,7 +384,7 @@ export default async function ImovelPage(props: PageProps<"/imoveis/[id]">) {
               </p>
             ) : (
               <ul className="divide-y divide-line">
-                {((vinculos ?? []) as unknown as VinculoComProprietario[]).map(
+                {proprietariosVinculados.map(
                   (vinculo) => (
                     <li
                       key={vinculo.id}

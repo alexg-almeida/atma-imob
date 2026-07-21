@@ -318,6 +318,54 @@ export function ImovelForm({
   });
   const mostraVenda = finalidade !== "locacao";
   const mostraLocacao = finalidade !== "venda";
+  const erros = form.formState.errors;
+  const erroGeral = Boolean(
+    erros.tipo_id ||
+      erros.finalidade ||
+      erros.status ||
+      erros.frase_destaque ||
+      erros.descricao ||
+      erros.endereco_completo ||
+      erros.cidade ||
+      erros.estado ||
+      erros.cep ||
+      erros.data_captacao ||
+      erros.captador_id ||
+      erros.inscricao_imobiliaria ||
+      erros.numero_matricula ||
+      erros.observacoes,
+  );
+  const erroCaracteristicas = Boolean(
+    erros.area_interna ||
+      erros.area_externa ||
+      erros.area_lote ||
+      erros.andar ||
+      erros.salas ||
+      erros.quartos ||
+      erros.suites ||
+      erros.banheiros ||
+      erros.varandas ||
+      erros.vagas ||
+      erros.numero_vaga ||
+      erros.tipo_vaga ||
+      erros.piso_acabamento ||
+      erros.fachada ||
+      erros.comodidades_internas ||
+      erros.instalacoes ||
+      erros.lazer ||
+      erros.diferenciais,
+  );
+  const erroValores = Boolean(
+    erros.valor_venda ||
+      erros.comissao_percentual ||
+      erros.valor_locacao ||
+      erros.iptu_mensal ||
+      erros.taxa_lixo ||
+      erros.parcela_taxa_lixo ||
+      erros.valor_condominio ||
+      erros.outras_taxas,
+  );
+  const erroProprietarios = Boolean(erros.proprietarios);
 
   async function onSubmit(data: ImovelFormValues) {
     setSaving(true);
@@ -439,24 +487,47 @@ export function ImovelForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b-2 border-ink pb-4">
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight text-ink">
+              Informações do imóvel
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              Preencha por etapa. Os campos obrigatórios e eventuais pendências são
+              indicados na própria seção.
+            </p>
+          </div>
+          <p className="font-mono text-xs text-muted-foreground">
+            {form.formState.isDirty ? "Alterações não salvas" : "Sem alterações pendentes"}
+          </p>
+        </div>
         <Tabs defaultValue="geral">
-          <TabsList variant="line" className="w-full justify-start gap-6 border-b border-line">
+          <TabsList
+            variant="line"
+            className="sticky top-0 z-20 w-full justify-start gap-6 overflow-x-auto border-b border-line bg-background/95 py-1 backdrop-blur-sm [scrollbar-width:none]"
+          >
             <TabsTrigger value="geral" className="flex-none px-0 text-[13px] font-semibold tracking-[0.12em] uppercase">
-              Geral
+              Geral {erroGeral ? <span className="h-1.5 w-1.5 rounded-full bg-alert" aria-label="Contém erros" /> : null}
             </TabsTrigger>
             <TabsTrigger value="caracteristicas" className="flex-none px-0 text-[13px] font-semibold tracking-[0.12em] uppercase">
-              Características
+              Características {erroCaracteristicas ? <span className="h-1.5 w-1.5 rounded-full bg-alert" aria-label="Contém erros" /> : null}
             </TabsTrigger>
             <TabsTrigger value="valores" className="flex-none px-0 text-[13px] font-semibold tracking-[0.12em] uppercase">
-              Valores
+              Valores {erroValores ? <span className="h-1.5 w-1.5 rounded-full bg-alert" aria-label="Contém erros" /> : null}
             </TabsTrigger>
             <TabsTrigger value="proprietarios" className="flex-none px-0 text-[13px] font-semibold tracking-[0.12em] uppercase">
-              Proprietários
+              Proprietários {erroProprietarios ? <span className="h-1.5 w-1.5 rounded-full bg-alert" aria-label="Contém erros" /> : null}
             </TabsTrigger>
           </TabsList>
 
           {/* ------------------------------------------------ GERAL */}
           <TabsContent value="geral" className="space-y-7 pt-8">
+            <div className="border-b border-line pb-5">
+              <h3 className="font-semibold text-ink">Identificação e localização</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Dados que identificam o imóvel na carteira e nos materiais gerados.
+              </p>
+            </div>
             <div className="grid grid-cols-1 gap-x-10 gap-y-7 sm:grid-cols-3">
               <FormField
                 control={form.control}
@@ -656,6 +727,12 @@ export function ImovelForm({
 
           {/* ------------------------------------- CARACTERÍSTICAS */}
           <TabsContent value="caracteristicas" className="space-y-7 pt-8">
+            <div className="border-b border-line pb-5">
+              <h3 className="font-semibold text-ink">Áreas e características</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Medidas, ambientes e diferenciais usados na consulta e no Book.
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-x-10 gap-y-7 sm:grid-cols-3">
               <TextField control={form.control} name="area_interna" label="Área interna (m²)" mono />
               <TextField control={form.control} name="area_externa" label="Área externa (m²)" mono />
@@ -710,6 +787,12 @@ export function ImovelForm({
 
           {/* ------------------------------------------------ VALORES */}
           <TabsContent value="valores" className="space-y-8 pt-8">
+            <div className="border-b border-line pb-5">
+              <h3 className="font-semibold text-ink">Valores da negociação</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Os campos exibidos se ajustam automaticamente à finalidade escolhida.
+              </p>
+            </div>
             {mostraVenda ? (
               <section>
                 <div className="border-b-2 border-ink pb-3">
@@ -766,6 +849,12 @@ export function ImovelForm({
 
           {/* ------------------------------------------- PROPRIETÁRIOS */}
           <TabsContent value="proprietarios" className="space-y-6 pt-8">
+            <div className="border-b border-line pb-5">
+              <h3 className="font-semibold text-ink">Vínculos de propriedade</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Defina o proprietário principal e a participação de cada vínculo.
+              </p>
+            </div>
             {proprietarios.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 Nenhum proprietário cadastrado ainda —{" "}
@@ -890,7 +979,7 @@ export function ImovelForm({
           </TabsContent>
         </Tabs>
 
-        <div className="mt-10 flex flex-col gap-3 border-t border-line pt-6 sm:flex-row sm:items-center">
+        <div className="sticky bottom-3 z-20 mt-10 flex flex-col gap-3 border-y border-line bg-background/95 px-1 py-4 shadow-[0_-10px_24px_rgba(245,245,245,0.92)] backdrop-blur-sm sm:flex-row sm:items-center">
           <Button type="submit" size="lg" disabled={saving}>
             {saving ? "Salvando…" : isEdit ? "Salvar alterações" : "Cadastrar imóvel"}
           </Button>

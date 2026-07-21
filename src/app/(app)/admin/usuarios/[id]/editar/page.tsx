@@ -51,7 +51,7 @@ export default async function EditarUsuarioPage(
         >
           ← Detalhe do usuário
         </Link>
-        <h1 className="mt-4 text-2xl font-bold tracking-tight text-ink">
+        <h1 className="mt-4 text-3xl leading-tight font-bold tracking-[-0.02em] text-ink sm:text-4xl">
           Editar usuário
         </h1>
       </div>

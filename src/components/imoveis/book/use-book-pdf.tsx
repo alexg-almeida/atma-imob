@@ -2,7 +2,13 @@
 
 import { useRef, useState } from "react";
 import type { jsPDF } from "jspdf";
-import { A4_PX, aguardarImagens, capturarPaginasComoPdf } from "@/lib/pdf/capturar-paginas";
+import {
+  A4_PX,
+  aguardarFontes,
+  aguardarImagens,
+  capturarPaginasComoPdf,
+  validarPaginasSemOverflow,
+} from "@/lib/pdf/capturar-paginas";
 import { dividirBlocoTexto, empacotarBlocos, medirAlturasDeBlocos } from "@/lib/pdf/blocos";
 import {
   BookContent,
@@ -17,6 +23,7 @@ import {
 import type { BookDados } from "@/components/imoveis/book/book-blocos";
 
 const ALTURA_RODAPE_FALLBACK_PX = 40;
+const MARGEM_SEGURANCA_PX = 16;
 
 function proximoFrame(): Promise<void> {
   return new Promise((resolve) =>
@@ -83,6 +90,7 @@ export function useBookPdf(dados: BookDados) {
   const [dadosAjustados, setDadosAjustados] = useState<BookDados>(dados);
 
   async function gerar(): Promise<jsPDF> {
+    await aguardarFontes();
     if (dadosAjustados !== dados) {
       setDadosAjustados(dados);
       await proximoFrame();
@@ -99,7 +107,11 @@ export function useBookPdf(dados: BookDados) {
     // da 2ª tem) — na página 1 o banner entra como bloco grande e "come"
     // esse orçamento naturalmente, ver comentário acima.
     const alturaUtil =
-      A4_PX.height - alturaRodape - BOOK_PADDING_TOPO_PX - BOOK_PADDING_BASE_PX;
+      A4_PX.height -
+      alturaRodape -
+      BOOK_PADDING_TOPO_PX -
+      BOOK_PADDING_BASE_PX -
+      MARGEM_SEGURANCA_PX;
 
     // Nenhum parágrafo da descrição pode, sozinho, exceder o orçamento de
     // uma página inteira (caso patológico de texto colado sem quebra de
@@ -134,7 +146,12 @@ export function useBookPdf(dados: BookDados) {
     );
     await Promise.all(paginasEl.map((el) => aguardarImagens(el)));
 
-    return capturarPaginasComoPdf(paginasEl);
+    validarPaginasSemOverflow(paginasEl);
+
+    return capturarPaginasComoPdf(paginasEl, {
+      title: `Book do imóvel · ${dados.imovel.tipo?.nome ?? "Imóvel"}`,
+      subject: "Apresentação comercial de imóvel",
+    });
   }
 
   const medidorNode = (

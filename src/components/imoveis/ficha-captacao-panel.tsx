@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { useFichaPdf } from "@/components/imoveis/ficha/use-ficha-pdf";
-import { formatDate } from "@/lib/format";
+import { formatAtmaToday, formatDate } from "@/lib/format";
 import type {
   FichaCaptacaoStatus,
   Imovel,
@@ -56,17 +56,40 @@ export function FichaCaptacaoPanel({
   const [fichas, setFichas] = useState(fichasIniciais);
   const [gerando, setGerando] = useState(false);
   const ultima = fichas[0] ?? null;
+  const numeroFicha = `CAP-${formatAtmaToday().slice(-4)}-${String(fichas.length + 1).padStart(4, "0")}`;
+  const proprietarioPrincipal =
+    proprietarios.find((vinculo) => vinculo.principal)?.proprietario ??
+    proprietarios[0]?.proprietario ??
+    null;
+  const pendenciasFicha = [
+    ...(!proprietarioPrincipal ? ["vincular um proprietário"] : []),
+    ...(proprietarioPrincipal && !proprietarioPrincipal.nome_completo
+      ? ["nome do proprietário"]
+      : []),
+    ...(proprietarioPrincipal && !proprietarioPrincipal.cpf ? ["CPF/CNPJ do proprietário"] : []),
+    ...(proprietarioPrincipal && !proprietarioPrincipal.endereco_completo
+      ? ["endereço do proprietário"]
+      : []),
+    ...(!imovel.endereco_completo ? ["endereço do imóvel"] : []),
+    ...(!imovel.numero_matricula ? ["matrícula do imóvel"] : []),
+    ...(imovel.comissao_percentual == null ? ["percentual de comissão"] : []),
+  ];
 
   const { medidorNode, renderNode, gerar } = useFichaPdf({
     imovel,
     tipoNome,
     captadorNome,
     proprietarios,
+    numeroFicha,
     termoTitulo,
     termoCorpo,
   });
 
   async function handleGerar() {
+    if (pendenciasFicha.length > 0) {
+      toast.error("Preencha os dados obrigatórios antes de gerar a ficha.");
+      return;
+    }
     setGerando(true);
     const supabase = createClient();
     try {
@@ -157,7 +180,20 @@ export function FichaCaptacaoPanel({
         </p>
       </div>
 
-      <Button type="button" onClick={handleGerar} disabled={gerando}>
+      {pendenciasFicha.length > 0 ? (
+        <div className="border-l-2 border-gold bg-surface px-4 py-3">
+          <p className="text-sm font-semibold text-ink">Dados necessários para o documento</p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            Preencha {pendenciasFicha.join(", ")} e salve o cadastro antes de gerar.
+          </p>
+        </div>
+      ) : null}
+
+      <Button
+        type="button"
+        onClick={handleGerar}
+        disabled={gerando || pendenciasFicha.length > 0}
+      >
         <FileArrowDown size={16} aria-hidden />
         {gerando ? "Gerando…" : "Gerar ficha de captação em PDF"}
       </Button>
